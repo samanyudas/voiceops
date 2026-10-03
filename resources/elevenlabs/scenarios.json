@@ -19,14 +19,14 @@
       "prepare_work_order": [
         {
           "parameter_conditions": [],
-          "mock_result": "{\"kind\":\"ready\",\"draft\":{\"id\":\"draft-synthetic-001\",\"report\":{\"assetId\":\"P-101\",\"category\":\"mechanical-leak\",\"observations\":\"Small seal leak while operating.\",\"facts\":{\"equipment\":\"operating\",\"leak\":\"minor\",\"fireOrSmoke\":\"no\",\"personnelHazard\":\"no\",\"vibration\":\"normal\",\"temperature\":\"normal\"}},\"assessment\":{\"kind\":\"eligible\",\"priority\":\"MEDIUM\",\"requiredSkill\":\"mechanical\",\"reasons\":[\"Reported abnormal vibration or temperature, or minor leak.\"]},\"expiresAt\":\"2099-01-01T00:00:00Z\",\"duplicateCandidates\":[]}}",
+          "mock_result": "{\"kind\":\"ready\",\"draft\":{\"id\":\"draft-synthetic-001\",\"report\":{\"assetId\":\"P-101\",\"category\":\"mechanical-leak\",\"observations\":\"Small seal leak while operating.\",\"facts\":{\"equipment\":\"operating\",\"leak\":\"minor\",\"fireOrSmoke\":\"no\",\"personnelHazard\":\"no\",\"vibration\":\"normal\",\"temperature\":\"normal\"}},\"assessment\":{\"kind\":\"eligible\",\"priority\":\"LOW\",\"requiredSkill\":\"mechanical\",\"reasons\":[\"Reported equipment operates without an explicit urgent condition.\"]},\"expiresAt\":\"2099-01-01T00:00:00Z\",\"duplicateCandidates\":[]}}",
           "is_error": false
         }
       ],
       "confirm_work_order": [
         {
           "parameter_conditions": [],
-          "mock_result": "{\"operation\":\"created\",\"workOrder\":{\"id\":\"WO-synthetic-001\",\"reportCount\":1,\"lifecycle\":\"ASSIGNED\",\"priority\":\"MEDIUM\",\"allocation\":{\"kind\":\"assigned\",\"technicianId\":\"Tech-01\"}},\"assignments\":[{\"workOrderId\":\"WO-synthetic-001\",\"technicianId\":\"Tech-01\",\"allocatedAt\":\"2026-10-03T00:00:00Z\"}]}",
+          "mock_result": "{\"operation\":\"created\",\"workOrder\":{\"id\":\"WO-synthetic-001\",\"reportCount\":1,\"lifecycle\":\"ASSIGNED\",\"priority\":\"LOW\",\"allocation\":{\"kind\":\"assigned\",\"technicianId\":\"Tech-01\"}},\"assignments\":[{\"workOrderId\":\"WO-synthetic-001\",\"technicianId\":\"Tech-01\",\"allocatedAt\":\"2026-10-03T00:00:00Z\"}]}",
           "is_error": false
         }
       ]
@@ -52,14 +52,14 @@
       "prepare_work_order": [
         {
           "parameter_conditions": [],
-          "mock_result": "{\"kind\":\"ready\",\"draft\":{\"id\":\"draft-synthetic-001\",\"report\":{\"assetId\":\"P-101\",\"category\":\"mechanical-leak\",\"observations\":\"Small seal leak while operating.\",\"facts\":{\"equipment\":\"operating\",\"leak\":\"minor\",\"fireOrSmoke\":\"no\",\"personnelHazard\":\"no\",\"vibration\":\"normal\",\"temperature\":\"normal\"}},\"assessment\":{\"kind\":\"eligible\",\"priority\":\"MEDIUM\",\"requiredSkill\":\"mechanical\",\"reasons\":[\"Reported abnormal vibration or temperature, or minor leak.\"]},\"expiresAt\":\"2099-01-01T00:00:00Z\",\"duplicateCandidates\":[]}}",
+          "mock_result": "{\"kind\":\"ready\",\"draft\":{\"id\":\"draft-synthetic-001\",\"report\":{\"assetId\":\"P-101\",\"category\":\"mechanical-leak\",\"observations\":\"Small seal leak while operating.\",\"facts\":{\"equipment\":\"operating\",\"leak\":\"minor\",\"fireOrSmoke\":\"no\",\"personnelHazard\":\"no\",\"vibration\":\"normal\",\"temperature\":\"normal\"}},\"assessment\":{\"kind\":\"eligible\",\"priority\":\"LOW\",\"requiredSkill\":\"mechanical\",\"reasons\":[\"Reported equipment operates without an explicit urgent condition.\"]},\"expiresAt\":\"2099-01-01T00:00:00Z\",\"duplicateCandidates\":[]}}",
           "is_error": false
         }
       ],
       "confirm_work_order": [
         {
           "parameter_conditions": [],
-          "mock_result": "{\"operation\":\"created\",\"workOrder\":{\"id\":\"WO-synthetic-001\",\"reportCount\":1,\"lifecycle\":\"ASSIGNED\",\"priority\":\"MEDIUM\",\"allocation\":{\"kind\":\"assigned\",\"technicianId\":\"Tech-01\"}},\"assignments\":[{\"workOrderId\":\"WO-synthetic-001\",\"technicianId\":\"Tech-01\",\"allocatedAt\":\"2026-10-03T00:00:00Z\"}]}",
+          "mock_result": "{\"operation\":\"created\",\"workOrder\":{\"id\":\"WO-synthetic-001\",\"reportCount\":1,\"lifecycle\":\"ASSIGNED\",\"priority\":\"LOW\",\"allocation\":{\"kind\":\"assigned\",\"technicianId\":\"Tech-01\"}},\"assignments\":[{\"workOrderId\":\"WO-synthetic-001\",\"technicianId\":\"Tech-01\",\"allocatedAt\":\"2026-10-03T00:00:00Z\"}]}",
           "is_error": false
         }
       ]

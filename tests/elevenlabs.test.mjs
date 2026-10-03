@@ -181,7 +181,8 @@ test('emergency and ambiguous mocks preserve the reported observations and backe
   assert.match(emergency.draft.report.observations, /personnel in danger/);
   assert.equal(emergency.draft.assessment.priority, 'CRITICAL');
   const routine = JSON.parse(bundle.tests[0].request.tool_mock_overrides.offline_prepare_work_order[0].mock_result);
-  assert.equal(routine.draft.assessment.priority, 'MEDIUM');
+  assert.equal(routine.draft.assessment.priority, 'LOW');
+  assert.deepEqual(routine.draft.assessment.reasons, ['Reported equipment operates without an explicit urgent condition.']);
   const held = JSON.parse(bundle.tests[4].request.tool_mock_overrides.offline_confirm_work_order[0].mock_result);
   assert.equal(held.workOrder.lifecycle, 'VALIDATED');
   assert.deepEqual(held.workOrder.allocation.reasons, ['Required facts remain unknown or the category is unclassified.']);
