@@ -17,7 +17,7 @@ See [PROGRESS.md](../../PROGRESS.md) for later product work.
 
 ## GitHub configuration
 
-Main now requires four compatibility checks and the package check.
+At the maintenance merge, main required four compatibility checks and the package check.
 The original configuration also required one approving review and resolved conversations.
 At merge time, the live protection response had no required approving-review rule.
 The guarded merge used the exact independently verified head without an administrator bypass.
@@ -36,6 +36,14 @@ CodeRabbit activated on PR 3 and provided a free-plan summary, not a full line r
 [Post-merge CI](https://github.com/samanyudas/voiceops/actions/runs/37110981770) passed all five jobs.
 [The issue-lifecycle dry run](https://github.com/samanyudas/voiceops/actions/runs/37111041151) passed on main without issue mutations.
 [Issue 2](https://github.com/samanyudas/voiceops/issues/2) closed after these checks.
+
+## Product acceptance gate
+
+On 2026-10-04, GitHub accepted `postgres-integration` as an additional required check for main.
+Readback confirmed strict checks, administrator enforcement, and required conversation resolution.
+The five existing required checks remain in place.
+No approving-review requirement exists in the live branch protection response.
+The documented maintainer approval requirement still applies to high-risk changes.
 
 ## User checklist status
 

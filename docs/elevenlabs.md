@@ -94,6 +94,18 @@ If the process crashes, verify that no operation still runs before removing the 
 Do not run provisioning in two checkouts against the same intended cloud deployment.
 A checkpoint protects one local state file, not independent copies of that file.
 
+## Renew a temporary tunnel
+
+Cloudflare can remove a temporary tunnel while its local process still runs.
+Verify the public HTTPS context endpoint before a hosted conversation.
+If the hostname changes, update the three existing webhook tool URLs in ElevenLabs.
+Preserve their identifiers, secret references, and other configuration fields.
+Read back all three tools before reconciling the local URL and checkpoint fingerprints.
+The provisioner does not update existing resources.
+Do not create a new state directory to repair an expired tunnel.
+That action can create duplicate cloud resources.
+See [the observed tunnel incident](https://github.com/samanyudas/voiceops/issues/10).
+
 ## Run the five conversational scenarios
 
 Run this command only when you intend to spend test credits.

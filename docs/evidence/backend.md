@@ -1,7 +1,7 @@
 # Backend verification evidence
 
 The combined product branch implements the accepted synthetic maintenance workflow.
-This record separates actual backend execution from pending hosted voice tests.
+This record separates backend verification from the later hosted voice results.
 
 ## Actual runtime
 
@@ -46,6 +46,17 @@ The reviewer found no additional serious public-path defect before these final c
 The final combined verification and CLI output fix ran under the root verifier.
 The independent reviewer did not execute those suites.
 
+## Fresh independent verification
+
+On 2026-10-04, a fresh verifier inspected the complete product diff at 0cd6200 against main at 978e491.
+The verifier used a separate checkout and test database.
+The baseline passed 45 tests.
+The product passed 77 offline tests and 32 real HTTP and Postgres tests without skips.
+The packaged source passed installation and all 77 offline tests in a clean extracted checkout.
+Seven additional HTTP and CLI checks covered the full lifecycle, receipt replay, duplicate holds, escalation history, and credential rejection.
+The verifier found no public-path defect.
+The final documentation delta and current GitHub checks still require separate confirmation.
+
 ## Evidence limits
 
 The later live verification passed all five mocked ElevenLabs simulations.
@@ -59,5 +70,5 @@ The PoC uses one facility dispatcher lock.
 The backend cannot independently prove verbal consent or personal technician identity.
 Manual-review holds have no supervisor release action in this PoC.
 The source archive from 75d1007 installed and passed all 77 tests in a clean extracted checkout.
-[Product CI](https://github.com/samanyudas/voiceops/actions/runs/37112964144) passed all six jobs at 75d1007.
+[Product CI](https://github.com/samanyudas/voiceops/actions/runs/37113514927) passed all six jobs at 0cd6200.
 Later evidence-only revisions require their own current CI result.

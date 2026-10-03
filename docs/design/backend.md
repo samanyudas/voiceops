@@ -8,7 +8,6 @@ The technician uses a separate credential and action route.
 No caller coordinates repository writes or controls transaction order.
 
 ```ts
-// Operator route after credential and Effect Schema validation.
 const prepared = yield* intake.prepare({
   asset: "pump p 101",
   category: "mechanical-leak",
@@ -35,7 +34,6 @@ const confirmed = yield* intake.confirm({
 ```
 
 ```ts
-// Same issue, after the operator selects a reported duplicate candidate.
 const updated = yield* intake.confirm({
   draftId,
   decision: { kind: "same-issue", workOrderId: existingId },
@@ -171,7 +169,6 @@ type ActionFailure =
   | InvalidInput | MissingWorkOrder | InvalidTransition
   | AssignmentMismatch | ConflictingReplay;
 // Each named failure is a tagged domain record with context for HTTP mapping.
-// Effect, AssetContext, and TransitionResult are interface sketch placeholders.
 
 type Lifecycle =
   | "NEW" | "VALIDATED" | "PRIORITIZED" | "ASSIGNED"
@@ -216,7 +213,6 @@ interface TechnicianActionService {
   act(input: TechnicianAction): Effect<ActionResult, ActionFailure | StorageFailure>;
 }
 
-// Pure functions receive all variable facts explicitly.
 function assess(report: Report): Assessment { throw new Error("not implemented"); }
 function requiredSkill(category: FaultCategory): Skill { throw new Error("not implemented"); }
 function raisePriority(existing: Priority, incoming: Priority): Priority {
