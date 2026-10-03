@@ -2,32 +2,35 @@
 
 ## Objective
 
-Establish repository maintenance before implementing the accepted voice workflow.
+Implement the accepted synthetic voice-to-work-order proof of concept.
 
 ## Current state
 
-Branch: chore/maintenance-foundation.
-The accepted spec and ADRs are on main at fbecc8d.
-Maintenance tooling, templates, and workflows are implemented on this branch.
-No application behavior is implemented.
+Branch: feat/backend-implementation.
+The backend implements Effect HttpApi, Schema, services, Postgres migrations, durable drafts, receipts, and technician commands.
+Pure policy derives eligibility, urgency, skill matching, duplicate decisions, and valid lifecycle transitions.
+One Postgres advisory lock serializes allocation and release transactions.
+Active assignments are the only technician capacity source.
+The seed reproduces three assets, three technicians, history, and two jobs with occupied capacity.
+The hosted voice configuration belongs to the parallel integration branch.
 
 ## Verification
 
-Pinned local verification passes 45 tests, lint, type checks, build, selftest, and repository checks.
-Live CI passed four compatibility jobs and source-package verification at 5c925c8.
-Local source-package verification passed for that committed source with all 45 tests.
-Independent review found no remaining serious defects in the review fixes.
-Model ablation benchmarks and real stable-release follow-up are not run.
+The baseline passed all 45 maintenance checks before implementation.
+Final Node 24.21.0 verification passed all 61 policy, credential-boundary, and maintenance tests.
+The final real HTTP and Postgres suite passed all 31 tests on Node 24.21.0, npm 12.2.0, and Postgres 18.6.
+This includes expiry after a lock wait, duplicate branches, manual holds, priority and FIFO order, races, rollback, persistence, retries, and CLI reassignment.
+Lint, strict type checks, build, selftest, repository policy, Compose configuration, and whitespace checks pass.
+The Linux Postgres CI job is configured but cannot run before the parent publishes this branch.
+No live ElevenLabs conversation, voice test, recording, or production readiness claim exists.
 
 ## Blockers
 
-CodeRabbit provided a free-plan summary, which does not include a full line review.
-Greptile, Cursor Bugbot, and Macroscope activation remains unverified.
-Blacksmith does not support this personal repository under its documented setup.
-The release environment exists, but the account plan rejected required reviewers and wait timers.
-High-risk workflow changes require maintainer review before merge.
+The ElevenLabs API key remains pending at the user's request.
+The backend credential boundary does not independently enforce human consent or personal technician identity.
+The PoC has no manual-review release action.
 
 ## Next step
 
-PR 3 awaits maintainer approval before the workflows become active on main.
-Then implement the accepted product spec in small verified units.
+Integrate the verified backend commit with the hosted voice configuration.
+The parent will combine the separately owned voice setup and request an independent review before publication.

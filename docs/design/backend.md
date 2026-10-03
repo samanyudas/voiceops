@@ -179,7 +179,8 @@ type Lifecycle =
 type Allocation =
   | { readonly kind: "held"; readonly reasons: readonly string[] }
   | { readonly kind: "queued"; readonly escalationRequired: boolean }
-  | { readonly kind: "assigned"; readonly technicianId: TechnicianId };
+  | { readonly kind: "assigned"; readonly technicianId: TechnicianId }
+  | { readonly kind: "completed" };
 interface WorkOrderView {
   readonly id: WorkOrderId;
   readonly reportCount: number;
@@ -460,3 +461,10 @@ The public HTTP concurrency tests and constraint tests must cover the resulting 
 ## Next implementation step
 
 Verify and pin the Effect package set, then create migrations and HTTP tests for confirmation, queue order, and atomic resolution.
+
+## Implementation reconciliation
+
+Resolved and closed read views use `allocation.kind = "completed"`.
+This outcome records released capacity without a false queued, held, or active assignment claim.
+Intake confirmation retains assigned, queued, and held outcomes.
+A confirmation result is the original operation receipt rather than the current work-order state.
