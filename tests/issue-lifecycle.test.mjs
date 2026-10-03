@@ -145,7 +145,7 @@ test('unanswered requests close at 14 days, not sooner, and do not close twice',
   await f.execute();
   assert.equal(patches(f.state).length, 1);
   assert.equal(f.state.issue.state, 'closed');
-  assert.ok(records(f.state.comments).some(value => value.kind === 'closed'));
+  assert.ok(records(f.state.comments).some(value => value.kind === 'closure-request'));
 });
 
 test('any human reply stops closure, including a reply found on the final read', async () => {
@@ -172,14 +172,14 @@ test('a new unreleased fix stops an older confirmation from closing', async () =
   assert.equal(patches(f.state).length, 0);
 });
 
-test('late human replies reopen only this workflow closure event', async () => {
+test('late human replies require maintainer reopening', async () => {
   const f = fixture({ comments: [comment(fix(sha)), comment(ask(), 2)] });
   await f.execute();
   f.state.comments.push({ id: 999, body: 'Still broken', user: human, created_at: '2026-01-16T00:00:00Z' });
   await f.execute('issue_comment', { issue: { number: 1 } });
-  assert.equal(f.state.issue.state, 'open');
+  assert.equal(f.state.issue.state, 'closed');
   await f.execute();
-  assert.equal(f.state.issue.state, 'open');
+  assert.equal(f.state.issue.state, 'closed');
 });
 
 test('manual closures and unrelated bot closures never reopen', async () => {
@@ -239,7 +239,7 @@ test('protected or opted-out issues never get changed', async () => {
   }
 });
 
-test('dry-run warning and reopening perform no writes', async () => {
+test('dry-run warning and closed-issue handling perform no writes', async () => {
   const warning = fixture({ dryRun: true });
   await warning.execute('pull_request_target', { pull_request: { ...merged(), body: 'Fixes #1' } });
   assert.deepEqual(warning.state.writes, []);

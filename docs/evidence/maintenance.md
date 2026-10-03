@@ -8,10 +8,10 @@ The application itself remains unimplemented.
 | Check | Evidence | Result |
 | --- | --- | --- |
 | Locked installation | Pinned Node 24.21.0 and npm 12.2.0 wrapper, with npm install --ignore-scripts | Passed, zero audit vulnerabilities |
-| Complete maintenance verification | npm run verify under the pinned wrapper | Passed lint, type checks, build, tests, selftest, and repository checks |
+| Complete maintenance verification | npm run verify under the pinned wrapper | Passed 45 tests, lint, type checks, build, selftest, and repository checks |
 | Command-boundary rejection | CLI fixture adds Date.now to a policy, then repairs it | Invalid checkout rejected, repaired checkout accepted |
 | Issue-follow-up contracts | Built-in Node tests with injected GitHub responses | Passed without external notifications |
-| Independent review | Fresh reviewer found opt-in, closure-attribution, trigger-syntax, and indexed-randomness defects | All four received fixes and regression coverage |
+| Independent review | Fresh reviewer found opt-in, closure-attribution, trigger-syntax, and indexed-randomness defects | Follow-up review found no remaining serious defects and independently passed 45 tests |
 | Runtime failure and repair | Default npm 11.19.1 failed the engine requirement | Pinned npm 12.2.0 installed and verified successfully |
 
 ## GitHub configuration
@@ -21,7 +21,13 @@ It also requires one approving review and resolved conversations.
 The rules apply to administrators and prohibit force pushes and deletion.
 The GitHub protection API accepted these settings.
 
-Live PR CI and package evidence will be added after the branch is published.
+The [first live CI run](https://github.com/samanyudas/voiceops/actions/runs/37081229312) passed all four compatibility jobs and source-package verification.
+It tested revision e5c8a7b.
+A final run must verify the subsequent review fixes.
+The clean source archive installed dependencies and passed verification locally.
+The release environment exists, but required reviewers and wait timers were rejected by the account plan.
+Those environment protections are not enforced.
+CodeRabbit activated on PR 3 and provided a free-plan summary, not a full line review.
 The maintenance workflows are not active on main until the PR merges.
 
 ## User checklist status
@@ -32,8 +38,8 @@ The maintenance workflows are not active on main until the PR merges.
 | Agent navigation documents | Implemented | AGENTS.md, contribution guide, AI contribution guide, glossary, ADRs |
 | Document structure | Locally verified | Required-document, local-link, punctuation, and instruction-size checks |
 | New issue templates | Implemented | Bug and feature forms, with blank issues disabled |
-| Specialist PR review | External activation pending | Four provider configurations and official setup references |
-| CI and compatibility | Live run pending | Four runtime/platform jobs, source packaging, and cleanup |
+| Specialist PR review | Partial | CodeRabbit free-plan summary observed; full review and other app activation remain unverified |
+| CI and compatibility | First live run passed | Four runtime/platform jobs, source packaging, and cleanup; final revision pending |
 | Clear task specification | Implemented | Accepted product spec and maintenance issue 2 |
 | Instructions and context | Implemented | Short map and task contract |
 | Inspect code before decisions | Observed | Empty repository inspected; reference workflow read before adaptation |
@@ -52,7 +58,8 @@ No reporter was asked to validate a release.
 No unanswered real reporter issue was closed.
 Contract tests cover those decisions, but they are not live release evidence.
 No controlled model ablation study ran.
-No external review app installation or billing state is verified.
+CodeRabbit summary activation is observed.
+Greptile, Cursor Bugbot, and Macroscope activation remains unverified.
 Blacksmith's documented setup does not support a personal repository.
 
 ## Reproduce

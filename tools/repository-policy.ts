@@ -37,11 +37,15 @@ export function inspectSource(file: string, text: string): Finding[] {
     if (ts.isCallExpression(node) && (node.expression.kind === ts.SyntaxKind.ImportKeyword || (ts.isIdentifier(node.expression) && node.expression.text === 'require'))) {
       add('static-imports', 'Use static imports so dependency boundaries remain inspectable.');
     }
-    if (pure && ts.isIdentifier(node) && ['process', 'fetch', 'Date', 'console', 'performance', 'crypto', 'setTimeout', 'setInterval', 'globalThis', 'Reflect', 'Function', 'eval'].includes(node.text)) {
+    if (pure && ts.isIdentifier(node) && ['process', 'fetch', 'Date', 'console', 'performance', 'crypto', 'setTimeout', 'setInterval', 'globalThis', 'global', 'Reflect', 'Function', 'eval'].includes(node.text)) {
       add('pure-policy', `Ambient effect or clock: ${node.text}`);
     }
     if (pure && ts.isPropertyAccessExpression(node) && node.expression.getText(source) === 'Math' && node.name.text === 'random') {
       add('pure-policy', 'Randomness must be an explicit input.');
+    }
+    if (pure && ts.isIdentifier(node) && node.text === 'Math' &&
+      !((ts.isPropertyAccessExpression(node.parent) || ts.isElementAccessExpression(node.parent)) && node.parent.expression === node)) {
+      add('pure-policy', 'Math cannot escape as a value or alias. Use a named deterministic operation.');
     }
     if (pure && ts.isElementAccessExpression(node) && node.expression.getText(source) === 'Math' &&
       (!ts.isStringLiteral(node.argumentExpression) || node.argumentExpression.text === 'random')) {

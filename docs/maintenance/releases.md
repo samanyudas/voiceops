@@ -17,6 +17,8 @@ Use the Release workflow with that tag and an explicit publication choice.
 The workflow verifies the checkout, packages source, and checks the extracted archive.
 The default mode creates a draft release.
 Choose stable publication only after the release decision.
+The account plan rejected environment reviewer and wait-timer protections.
+The workflow cannot claim those protections enforce this decision.
 Use GitHub-generated release notes rather than manually editing a changelog.
 
 Never move a published tag or replace an existing release's assets.

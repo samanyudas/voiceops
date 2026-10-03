@@ -13,18 +13,21 @@ No application behavior is implemented.
 
 ## Verification
 
-Pinned local verification passes 42 tests, lint, type checks, build, selftest, and repository checks.
-Live CI and source-package verification remain pending.
-A source-package check must verify the exact committed source.
+Pinned local verification passes 45 tests, lint, type checks, build, selftest, and repository checks.
+The first live CI run passed four compatibility jobs and source-package verification at e5c8a7b.
+The final review fixes still require a live CI run.
+Local source-package verification passed for the earlier committed source.
 Model ablation benchmarks and real stable-release follow-up are not run.
 
 ## Blockers
 
-External review apps need account-level enablement.
+CodeRabbit provided a free-plan summary, which does not include a full line review.
+Greptile, Cursor Bugbot, and Macroscope activation remains unverified.
 Blacksmith does not support this personal repository under its documented setup.
+The release environment exists, but the account plan rejected required reviewers and wait timers.
 High-risk workflow changes require maintainer review before merge.
 
 ## Next step
 
-Run source-package verification and live PR checks, then record the evidence.
+Verify the final review fixes in live PR checks, then record the evidence.
 Then implement the accepted product spec in small verified units.

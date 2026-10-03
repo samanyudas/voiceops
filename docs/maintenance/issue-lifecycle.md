@@ -37,15 +37,13 @@ Bot comments do not stop the timer.
 An unanswered request closes after 14 days with the `not_planned` state reason.
 Closure does not assert that the reporter verified the fix.
 Immediately before closure, the workflow reads the issue and all comments again.
-A reply that races with closure is recovered by the comment event or the next daily run.
+A reply can race with the final closure request because GitHub provides no atomic comment-and-state condition.
+A maintainer must reopen the issue when a late reply reports a remaining bug.
 
-A closure receipt records the exact GitHub issue event ID.
-A receipt requires exactly one new state transition after the pre-closure snapshot.
-Intervening transitions prevent automatic attribution and require maintainer recovery.
-A later human reply reopens the issue only if its most recent state transition matches that bot closure receipt.
-Manual closures and unrelated bot closures remain closed.
-If execution stops between closure and its receipt, a maintainer must reopen the issue.
-This conservative failure behavior prevents the workflow from claiming another actor's closure.
+The workflow does not automatically reopen a closed issue.
+GitHub workflows share the github-actions bot identity, so an event cannot reliably identify the workflow that closed it.
+This limit prevents automated reopening from undoing a maintainer's or another workflow's decision.
+The bot records a closure request, not a claim that a particular closure event belongs to this workflow.
 
 ## Execution and permissions
 
@@ -80,6 +78,6 @@ node --test tests/issue-lifecycle.test.mjs
 ```
 
 The tests inject a GitHub client and make no network requests.
-They check ancestry decisions, protected issues, retries, human replies, closure receipts, pagination, and dry-run behavior.
+They check ancestry decisions, protected issues, retries, human replies, conservative closed-issue handling, pagination, and dry-run behavior.
 They provide local contract evidence only.
 They do not prove that a real release contains a fix or that a live workflow has run.

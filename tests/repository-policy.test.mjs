@@ -21,7 +21,10 @@ for (const [name, source, rule] of [
   ['any', 'const x: any = 1;', 'type-safety'],
   ['random', 'export const x = Math.random();', 'pure-policy'],
   ['indexed random', 'export const x = Math["random"]();', 'pure-policy'],
-  ['ambient escape', 'export const x = globalThis["Date"].now();', 'pure-policy']
+  ['ambient escape', 'export const x = globalThis["Date"].now();', 'pure-policy'],
+  ['Node ambient escape', 'export const x = global["Date"].now();', 'pure-policy'],
+  ['aliased random', 'const math = Math; export const x = math.random();', 'pure-policy'],
+  ['destructured random', 'const { random } = Math; export const x = random();', 'pure-policy']
 ]) test(`policy gate rejects ${name}`, () => {
   assert.ok(inspectSource('src/policy/priority.ts', source).some(finding => finding.rule === rule));
 });

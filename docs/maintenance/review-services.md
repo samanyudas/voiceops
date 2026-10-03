@@ -19,7 +19,9 @@ Neutral checks do not prove that findings are resolved.
 Require the provider's failure setting when unresolved findings must block merge.
 
 The current token cannot enumerate GitHub App installations.
-Activation remains unverified until real review output exists.
+CodeRabbit supplied a free-plan summary on PR 3.
+Full line review was not included in that output.
+Greptile, Cursor Bugbot, and Macroscope activation remains unverified.
 Do not post review-trigger comments without authorization to contact the service.
 
 ## Official setup references

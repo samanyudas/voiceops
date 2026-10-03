@@ -149,21 +149,8 @@ export async function run({ api, eventName, event, now = new Date() }) {
     const fixes = history.filter(record => record.kind === 'fix');
     const asks = history.filter(record => record.kind === 'ask');
     const ask = asks.at(-1);
-    if (issue.state === 'closed') {
-      const closure = history.filter(record => record.kind === 'closed').at(-1);
-      if (!closure || !ask) continue;
-      const transitions = (await api.list(`/issues/${issue.number}/events`)).filter(item => ['closed', 'reopened'].includes(item.event));
-      const last = transitions.at(-1);
-      if (last?.event === 'closed' && last.actor?.login === BOT && last.actor?.type === 'Bot' &&
-          last.id === closure.event && closure.ask === ask.comment.id &&
-          humanAfter(comments, ask.comment.created_at)) {
-        await write('PATCH', `/issues/${issue.number}`, { state: 'open' });
-        await removeLabel(issue, waitingLabel);
-      }
-      continue;
-    }
+    if (issue.state === 'closed') continue;
     if (!fixes.length) continue;
-    // Any human response to a request ends automatic closure for this issue.
     if (asks.some(value => humanAfter(comments, value.comment.created_at))) {
       await removeLabel(issue, waitingLabel);
       continue;
@@ -172,7 +159,7 @@ export async function run({ api, eventName, event, now = new Date() }) {
     if (!ask || JSON.stringify(ask.shas) !== JSON.stringify(shas)) {
       for (const release of releases) {
         if (!(await Promise.all(shas.map(sha => contains(release, sha)))).every(Boolean)) continue;
-        await comment(issue.number, `@${issue.user.login}, the stable release [${release.tag_name}](${release.html_url}) contains the tracked fixes. Can you test it and report whether this bug is resolved? Any human reply stops automatic closure. Without a reply, this issue will close after 14 days. A later reply will reopen an issue closed by this follow-up.\n\n${marker({ kind: 'ask', shas, release: release.id })}`);
+        await comment(issue.number, `@${issue.user.login}, the stable release [${release.tag_name}](${release.html_url}) contains the tracked fixes. Can you test it and report whether this bug is resolved? Any human reply stops automatic closure. Without a reply, this issue will close after 14 days. If the bug remains later, ask the maintainer to reopen it.\n\n${marker({ kind: 'ask', shas, release: release.id })}`);
         await label(issue.number, waitingLabel);
         await removeLabel(issue, pendingLabel);
         break;
@@ -182,24 +169,14 @@ export async function run({ api, eventName, event, now = new Date() }) {
     await label(issue.number, waitingLabel);
     await removeLabel(issue, pendingLabel);
     if (now - new Date(ask.comment.created_at) < 14 * DAY) continue;
-    // Re-read before closure to catch replies and maintainer changes during this run.
     issue = await api.request('GET', `/issues/${issue.number}`);
     comments = await commentsFor(issue.number);
     history = records(comments);
     if (!eligible(issue) || issue.state !== 'open' || humanAfter(comments, ask.comment.created_at) ||
         history.filter(value => value.kind === 'ask').at(-1)?.comment.id !== ask.comment.id ||
         history.some(value => value.kind === 'fix' && !shas.includes(value.sha))) continue;
-    const before = api.dryRun ? [] : await api.list(`/issues/${issue.number}/events`);
-    const priorTransitions = new Set(before.filter(item => ['closed', 'reopened'].includes(item.event)).map(item => item.id));
+    await comment(issue.number, `This confirmation request received no human reply within 14 days. The workflow will request closure. This is not evidence that the reporter verified the fix. Ask the maintainer to reopen it if the bug remains.\n\n${marker({ kind: 'closure-request', ask: ask.comment.id })}`);
     await write('PATCH', `/issues/${issue.number}`, { state: 'closed', state_reason: 'not_planned' });
-    if (!api.dryRun) {
-      const transitions = (await api.list(`/issues/${issue.number}/events`)).filter(item => ['closed', 'reopened'].includes(item.event));
-      const added = transitions.filter(item => !priorTransitions.has(item.id));
-      const closed = added[0];
-      if (added.length === 1 && closed?.event === 'closed' && closed.actor?.login === BOT && closed.actor?.type === 'Bot') {
-        await comment(issue.number, `Closed this release confirmation request after 14 days without a human reply. Reply if the bug remains and this follow-up will reopen the issue.\n\n${marker({ kind: 'closed', ask: ask.comment.id, event: closed.id })}`);
-      }
-    }
     await removeLabel(issue, waitingLabel);
   }
 }
