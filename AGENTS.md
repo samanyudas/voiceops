@@ -1,3 +1,45 @@
+# VoiceOps agent map
+
+VoiceOps uses TypeScript, Effect, and Postgres in its accepted design.
+The current checkout contains maintenance tooling and product specifications.
+Read [PROGRESS.md](PROGRESS.md) before selecting work.
+
+## Commands
+
+Use Node 24.21.0 and npm 12.2.0.
+
+```sh
+npm ci --ignore-scripts
+npm run verify
+npm run eval
+npm run package:source
+npm run check:package
+```
+
+Run the actual affected behavior before declaring a feature complete.
+Maintenance checks do not prove voice, database, or technician behavior.
+
+## Work boundaries
+
+- Keep priority, skill, duplicate, and transition decisions pure.
+- Keep assignment writes and audit events inside their transaction owner.
+- Preserve unknown observations and use synthetic data only.
+- Read the implementation and other callers before editing.
+- Use one branch or worktree per independent task.
+- Record evidence and remaining work in PROGRESS.md before handoff.
+- Preserve generated files, including the changelog, through their generator.
+
+Read [architecture](docs/ARCHITECTURE.md) before changing module boundaries.
+Read [agent contributions](docs/AI-CONTRIBUTIONS.md) before implementation or review.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
+
+## Definition of done
+
+Acceptance criteria match observed behavior.
+The applicable tests and `npm run verify` pass.
+The diff, risk class, and verification gaps are reviewable.
+Release and external-service claims have direct evidence.
+
 ## Agent skills
 
 ### Issue tracker
