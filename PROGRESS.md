@@ -14,9 +14,9 @@ No application behavior is implemented.
 ## Verification
 
 Pinned local verification passes 45 tests, lint, type checks, build, selftest, and repository checks.
-The first live CI run passed four compatibility jobs and source-package verification at e5c8a7b.
-The final review fixes still require a live CI run.
-Local source-package verification passed for the earlier committed source.
+Live CI passed four compatibility jobs and source-package verification at 5c925c8.
+Local source-package verification passed for that committed source with all 45 tests.
+Independent review found no remaining serious defects in the review fixes.
 Model ablation benchmarks and real stable-release follow-up are not run.
 
 ## Blockers
@@ -29,5 +29,5 @@ High-risk workflow changes require maintainer review before merge.
 
 ## Next step
 
-Verify the final review fixes in live PR checks, then record the evidence.
+PR 3 awaits maintainer approval before the workflows become active on main.
 Then implement the accepted product spec in small verified units.

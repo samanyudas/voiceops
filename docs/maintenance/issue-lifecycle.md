@@ -65,7 +65,7 @@ The script requires `GITHUB_TOKEN`, `GITHUB_REPOSITORY`, `GITHUB_EVENT_NAME`, an
 
 The workflow uses append-only markers authored by `github-actions[bot]`.
 It ignores markers posted by humans or other bots.
-It reads every page of issues, PRs, releases, comments, and issue events.
+It reads every page of issues, PRs, releases, and comments.
 Retries do not duplicate fix records or confirmation requests.
 A missing comparison, failed API call, or missing release proof stops progress without assuming a fix shipped.
 

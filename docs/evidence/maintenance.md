@@ -23,8 +23,9 @@ The GitHub protection API accepted these settings.
 
 The [first live CI run](https://github.com/samanyudas/voiceops/actions/runs/37081229312) passed all four compatibility jobs and source-package verification.
 It tested revision e5c8a7b.
-A final run must verify the subsequent review fixes.
-The clean source archive installed dependencies and passed verification locally.
+The [review-fix CI run](https://github.com/samanyudas/voiceops/actions/runs/37082084172) also passed all five jobs at 5c925c8.
+The clean source archive from 5c925c8 installed dependencies and passed all 45 tests locally.
+Check the latest PR revision separately from this recorded run.
 The release environment exists, but required reviewers and wait timers were rejected by the account plan.
 Those environment protections are not enforced.
 CodeRabbit activated on PR 3 and provided a free-plan summary, not a full line review.
@@ -39,7 +40,7 @@ The maintenance workflows are not active on main until the PR merges.
 | Document structure | Locally verified | Required-document, local-link, punctuation, and instruction-size checks |
 | New issue templates | Implemented | Bug and feature forms, with blank issues disabled |
 | Specialist PR review | Partial | CodeRabbit free-plan summary observed; full review and other app activation remain unverified |
-| CI and compatibility | First live run passed | Four runtime/platform jobs, source packaging, and cleanup; final revision pending |
+| CI and compatibility | Live review-fix run passed | Four runtime/platform jobs, source packaging, and cleanup at 5c925c8 |
 | Clear task specification | Implemented | Accepted product spec and maintenance issue 2 |
 | Instructions and context | Implemented | Short map and task contract |
 | Inspect code before decisions | Observed | Empty repository inspected; reference workflow read before adaptation |
