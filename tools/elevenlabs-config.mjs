@@ -76,14 +76,14 @@ export async function configuration(env, ids = {}) {
   return { tools, agent, tests };
 }
 
-export function validateOfficialRequests(document, bundle) {
+export function validateJsonSchema(document, schema, value, path = "value") {
   const validate = (schema, value, path) => {
     if (schema.$ref) return validate(document.components.schemas[schema.$ref.split('/').at(-1)], value, path);
     if (schema.anyOf || schema.oneOf) {
       if ((schema.anyOf ?? schema.oneOf).some(option => { try { validate(option, value, path); return true; } catch { return false; } })) return;
-      throw new Error(`Official schema mismatch at ${path}.`);
+      throw new Error(`Schema mismatch at ${path}.`);
     }
-    const fail = () => { throw new Error(`Official schema mismatch at ${path}.`); };
+    const fail = () => { throw new Error(`Schema mismatch at ${path}.`); };
     if ('const' in schema && value !== schema.const || schema.enum && !schema.enum.includes(value)) fail();
     if (schema.type === 'null' && value !== null) fail();
     if (schema.type === 'string' && (typeof value !== 'string' || schema.minLength && value.length < schema.minLength || schema.maxLength && value.length > schema.maxLength || schema.pattern && !new RegExp(schema.pattern).test(value))) fail();
@@ -103,6 +103,11 @@ export function validateOfficialRequests(document, bundle) {
       }
     }
   };
+  validate(schema, value, path);
+}
+
+export function validateOfficialRequests(document, bundle) {
+  const validate = (schema, value, path) => validateJsonSchema(document, schema, value, path);
   for (const request of bundle.tools) validate({ $ref: '#/components/schemas/ToolRequestModel' }, request, 'tool');
   validate({ $ref: '#/components/schemas/Body_Create_Agent_v1_convai_agents_create_post' }, bundle.agent, 'agent');
   for (const test of bundle.tests) validate({ $ref: '#/components/schemas/CreateSimulationTestRequest' }, test.request, `test.${test.key}`);
@@ -135,4 +140,26 @@ export function checkBackendContract(document, bundle) {
     if (JSON.stringify([...choices(facts.properties?.[field])].sort()) !== JSON.stringify([...schema.enum].sort())) throw new Error(`Backend fact choices differ for ${field}.`);
   }
   if (JSON.stringify([...choices(input.properties?.category)].sort()) !== JSON.stringify([...categories].sort())) throw new Error('Backend fault categories differ from the voice-tool schema.');
+}
+
+export function validateMockResponses(document, bundle) {
+  const ids = bundle.agent.conversation_config.agent.prompt.tool_ids;
+  const toolsById = Object.fromEntries(bundle.tools.map((tool, index) => [ids[index], tool.tool_config]));
+  for (const test of bundle.tests) {
+    for (const [id, mocks] of Object.entries(test.request.tool_mock_overrides)) {
+      const tool = toolsById[id];
+      if (!tool) throw new Error('A simulation mock references an unknown voice tool.');
+      const path = new URL(tool.api_schema.url).pathname.replaceAll('%7B', '{').replaceAll('%7D', '}');
+      const responses = document.paths?.[path]?.[tool.api_schema.method.toLowerCase()]?.responses;
+      if (!responses) throw new Error(`Backend responses are missing for ${tool.name}.`);
+      for (const mock of mocks) {
+        const schemas = Object.entries(responses)
+          .filter(([status]) => mock.is_error ? /^[45][0-9]{2}$/.test(status) : status === '200')
+          .map(([, response]) => response.content?.['application/json']?.schema)
+          .filter(Boolean);
+        if (!schemas.length) throw new Error(`Backend response schema is missing for ${tool.name}.`);
+        validateJsonSchema(document, { anyOf: schemas }, JSON.parse(mock.mock_result), `mock.${test.key}.${tool.name}`);
+      }
+    }
+  }
 }

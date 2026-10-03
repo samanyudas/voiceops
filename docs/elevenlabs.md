@@ -52,7 +52,7 @@ ELEVENLABS_TOOL_SECRET_ID=<the ElevenLabs secret identifier>
 VOICEOPS_PUBLIC_URL=https://<your tunnel hostname>
 ```
 
-The workspace secret must match the backend `VOICEOPS_TOOL_KEY` value.
+The workspace secret must match the backend `TOOL_API_KEY` value.
 The agent uses `x-voiceops-tool-key` with an ElevenLabs `secret_id` locator.
 Do not expose the separate technician credential to the agent.
 Use an API key that can create tools, agents, tests, and test invocations.

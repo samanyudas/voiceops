@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { checkBackendContract, configuration, factsSchema, publicBackendUrl, secretLocator, toolNames } from '../tools/elevenlabs-config.mjs';
+import { checkBackendContract, configuration, factsSchema, publicBackendUrl, secretLocator, toolNames, validateJsonSchema, validateMockResponses } from '../tools/elevenlabs-config.mjs';
 import { adopt, apiClient, provision, runTests, saveState, summarizeInvocation } from '../tools/elevenlabs.mjs';
 const env = { VOICEOPS_PUBLIC_URL: 'https://voiceops.example.com', ELEVENLABS_TOOL_SECRET_ID: 'secret_locator_001' };
 
@@ -130,4 +130,59 @@ test('backend integration hook rejects route and bounded-fact contract drift', a
   document.paths['/intake/confirm'] = { post: {} };
   document.paths['/intake/prepare'].post.requestBody.content['application/json'].schema.properties.facts.properties.leak.enum = ['none', 'minor', 'significant'];
   assert.throws(() => checkBackendContract(document, bundle), /fact choices differ for leak/);
+});
+
+test('mock response validation rejects a missing backend context field and a fabricated error type', async () => {
+  const bundle = await configuration(env);
+  const response = schema => ({ content: { 'application/json': { schema } } });
+  const document = {
+    components: { schemas: { MissingRecord: { type: 'object', required: ['_tag', 'code', 'message'], properties: {
+      _tag: { const: 'MissingRecord' }, code: { type: 'string' }, message: { type: 'string' },
+    }, additionalProperties: false } } },
+    paths: {
+      '/assets/{assetId}': { get: { responses: {
+        200: response({ type: 'object', required: ['asset', 'history', 'openWorkOrders'] }),
+        404: response({ $ref: '#/components/schemas/MissingRecord' }),
+      } } },
+      '/intake/prepare': { post: { responses: { 200: response({}) } } },
+      '/intake/confirm': { post: { responses: { 200: response({}) } } },
+    },
+  };
+  validateMockResponses(document, bundle);
+  const contextMock = bundle.tests[0].request.tool_mock_overrides.offline_get_maintenance_context[0];
+  const validContext = contextMock.mock_result;
+  const context = JSON.parse(validContext);
+  delete context.openWorkOrders;
+  contextMock.mock_result = JSON.stringify(context);
+  assert.throws(() => validateMockResponses(document, bundle), /mock.complete-intake.get_maintenance_context/);
+  contextMock.mock_result = validContext;
+  bundle.tests[2].request.tool_mock_overrides.offline_get_maintenance_context[0].mock_result = JSON.stringify({ _tag: 'UnknownAsset', assetId: 'P-999' });
+  assert.throws(() => validateMockResponses(document, bundle), /mock.unknown-asset.get_maintenance_context/);
+});
+test('response schema checks enforce report identifiers, assessment branches, assignment timestamps, and held reasons', () => {
+  const shapes = [
+    [{ type: 'object', required: ['assetId'], properties: { assetId: { type: 'string' } } }, { assetId: 'P-101' }, { asset: 'P-101' }],
+    [{ anyOf: [
+      { type: 'object', required: ['kind', 'priority', 'requiredSkill', 'reasons'], properties: { kind: { const: 'eligible' } } },
+      { type: 'object', required: ['kind', 'knownPriority', 'missing', 'reasons'], properties: { kind: { const: 'manual-review' } } },
+    ] }, { kind: 'manual-review', knownPriority: null, missing: ['leak'], reasons: ['Unknown leak.'] }, { kind: 'manual-review', priority: null, reasons: [] }],
+    [{ type: 'object', required: ['workOrderId', 'technicianId', 'allocatedAt'], properties: { allocatedAt: { type: 'string' } } }, { workOrderId: 'WO-1', technicianId: 'Tech-01', allocatedAt: '2026-10-03T00:00:00Z' }, { workOrderId: 'WO-1', technicianId: 'Tech-01', assignedAt: '2026-10-03T00:00:00Z' }],
+    [{ type: 'object', required: ['kind', 'reasons'], properties: { kind: { const: 'held' }, reasons: { type: 'array', items: { type: 'string' } } } }, { kind: 'held', reasons: ['Unknown facts.'] }, { kind: 'held' }],
+  ];
+  for (const [schema, valid, invalid] of shapes) {
+    validateJsonSchema({}, schema, valid);
+    assert.throws(() => validateJsonSchema({}, schema, invalid), /Schema mismatch/);
+  }
+});
+test('emergency and ambiguous mocks preserve the reported observations and backend outcomes', async () => {
+  const bundle = await configuration(env);
+  const emergency = JSON.parse(bundle.tests[3].request.tool_mock_overrides.offline_prepare_work_order[0].mock_result);
+  assert.match(emergency.draft.report.observations, /Significant active leak/);
+  assert.match(emergency.draft.report.observations, /personnel in danger/);
+  assert.equal(emergency.draft.assessment.priority, 'CRITICAL');
+  const routine = JSON.parse(bundle.tests[0].request.tool_mock_overrides.offline_prepare_work_order[0].mock_result);
+  assert.equal(routine.draft.assessment.priority, 'MEDIUM');
+  const held = JSON.parse(bundle.tests[4].request.tool_mock_overrides.offline_confirm_work_order[0].mock_result);
+  assert.equal(held.workOrder.lifecycle, 'VALIDATED');
+  assert.deepEqual(held.workOrder.allocation.reasons, ['Required facts remain unknown or the category is unclassified.']);
 });

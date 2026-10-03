@@ -12,21 +12,21 @@
       "get_maintenance_context": [
         {
           "parameter_conditions": [],
-          "mock_result": "{\"asset\": {\"id\": \"P-101\", \"type\": \"pump\", \"name\": \"Synthetic transfer pump\"}, \"history\": []}",
+          "mock_result": "{\"asset\":{\"id\":\"P-101\",\"type\":\"pump\",\"name\":\"Synthetic transfer pump\"},\"history\":[],\"openWorkOrders\":[]}",
           "is_error": false
         }
       ],
       "prepare_work_order": [
         {
           "parameter_conditions": [],
-          "mock_result": "{\"kind\": \"ready\", \"draft\": {\"id\": \"draft-synthetic-001\", \"report\": {\"assetId\": \"P-101\", \"category\": \"mechanical-leak\", \"observations\": \"Small seal leak while operating.\", \"facts\": {\"equipment\": \"operating\", \"leak\": \"minor\", \"fireOrSmoke\": \"no\", \"personnelHazard\": \"no\", \"vibration\": \"normal\", \"temperature\": \"normal\"}}, \"assessment\": {\"kind\": \"eligible\", \"priority\": \"LOW\", \"requiredSkill\": \"mechanical\", \"reasons\": [\"minor-leak\"]}, \"expiresAt\": \"2099-01-01T00:00:00Z\", \"duplicateCandidates\": []}}",
+          "mock_result": "{\"kind\":\"ready\",\"draft\":{\"id\":\"draft-synthetic-001\",\"report\":{\"assetId\":\"P-101\",\"category\":\"mechanical-leak\",\"observations\":\"Small seal leak while operating.\",\"facts\":{\"equipment\":\"operating\",\"leak\":\"minor\",\"fireOrSmoke\":\"no\",\"personnelHazard\":\"no\",\"vibration\":\"normal\",\"temperature\":\"normal\"}},\"assessment\":{\"kind\":\"eligible\",\"priority\":\"MEDIUM\",\"requiredSkill\":\"mechanical\",\"reasons\":[\"Reported abnormal vibration or temperature, or minor leak.\"]},\"expiresAt\":\"2099-01-01T00:00:00Z\",\"duplicateCandidates\":[]}}",
           "is_error": false
         }
       ],
       "confirm_work_order": [
         {
           "parameter_conditions": [],
-          "mock_result": "{\"operation\": \"created\", \"workOrder\": {\"id\": \"WO-synthetic-001\", \"reportCount\": 1, \"lifecycle\": \"ASSIGNED\", \"priority\": \"LOW\", \"allocation\": {\"kind\": \"assigned\", \"technicianId\": \"Tech-01\"}}, \"assignments\": [{\"workOrderId\": \"WO-synthetic-001\", \"technicianId\": \"Tech-01\", \"allocatedAt\": \"2026-10-03T00:00:00Z\"}]}",
+          "mock_result": "{\"operation\":\"created\",\"workOrder\":{\"id\":\"WO-synthetic-001\",\"reportCount\":1,\"lifecycle\":\"ASSIGNED\",\"priority\":\"MEDIUM\",\"allocation\":{\"kind\":\"assigned\",\"technicianId\":\"Tech-01\"}},\"assignments\":[{\"workOrderId\":\"WO-synthetic-001\",\"technicianId\":\"Tech-01\",\"allocatedAt\":\"2026-10-03T00:00:00Z\"}]}",
           "is_error": false
         }
       ]
@@ -45,21 +45,21 @@
       "get_maintenance_context": [
         {
           "parameter_conditions": [],
-          "mock_result": "{\"asset\": {\"id\": \"P-101\", \"type\": \"pump\", \"name\": \"Synthetic transfer pump\"}, \"history\": []}",
+          "mock_result": "{\"asset\":{\"id\":\"P-101\",\"type\":\"pump\",\"name\":\"Synthetic transfer pump\"},\"history\":[],\"openWorkOrders\":[]}",
           "is_error": false
         }
       ],
       "prepare_work_order": [
         {
           "parameter_conditions": [],
-          "mock_result": "{\"kind\": \"ready\", \"draft\": {\"id\": \"draft-synthetic-001\", \"report\": {\"assetId\": \"P-101\", \"category\": \"mechanical-leak\", \"observations\": \"Small seal leak while operating.\", \"facts\": {\"equipment\": \"operating\", \"leak\": \"minor\", \"fireOrSmoke\": \"no\", \"personnelHazard\": \"no\", \"vibration\": \"normal\", \"temperature\": \"normal\"}}, \"assessment\": {\"kind\": \"eligible\", \"priority\": \"LOW\", \"requiredSkill\": \"mechanical\", \"reasons\": [\"minor-leak\"]}, \"expiresAt\": \"2099-01-01T00:00:00Z\", \"duplicateCandidates\": []}}",
+          "mock_result": "{\"kind\":\"ready\",\"draft\":{\"id\":\"draft-synthetic-001\",\"report\":{\"assetId\":\"P-101\",\"category\":\"mechanical-leak\",\"observations\":\"Small seal leak while operating.\",\"facts\":{\"equipment\":\"operating\",\"leak\":\"minor\",\"fireOrSmoke\":\"no\",\"personnelHazard\":\"no\",\"vibration\":\"normal\",\"temperature\":\"normal\"}},\"assessment\":{\"kind\":\"eligible\",\"priority\":\"MEDIUM\",\"requiredSkill\":\"mechanical\",\"reasons\":[\"Reported abnormal vibration or temperature, or minor leak.\"]},\"expiresAt\":\"2099-01-01T00:00:00Z\",\"duplicateCandidates\":[]}}",
           "is_error": false
         }
       ],
       "confirm_work_order": [
         {
           "parameter_conditions": [],
-          "mock_result": "{\"operation\": \"created\", \"workOrder\": {\"id\": \"WO-synthetic-001\", \"reportCount\": 1, \"lifecycle\": \"ASSIGNED\", \"priority\": \"LOW\", \"allocation\": {\"kind\": \"assigned\", \"technicianId\": \"Tech-01\"}}, \"assignments\": [{\"workOrderId\": \"WO-synthetic-001\", \"technicianId\": \"Tech-01\", \"allocatedAt\": \"2026-10-03T00:00:00Z\"}]}",
+          "mock_result": "{\"operation\":\"created\",\"workOrder\":{\"id\":\"WO-synthetic-001\",\"reportCount\":1,\"lifecycle\":\"ASSIGNED\",\"priority\":\"MEDIUM\",\"allocation\":{\"kind\":\"assigned\",\"technicianId\":\"Tech-01\"}},\"assignments\":[{\"workOrderId\":\"WO-synthetic-001\",\"technicianId\":\"Tech-01\",\"allocatedAt\":\"2026-10-03T00:00:00Z\"}]}",
           "is_error": false
         }
       ]
@@ -78,7 +78,7 @@
       "get_maintenance_context": [
         {
           "parameter_conditions": [],
-          "mock_result": "{\"_tag\": \"UnknownAsset\", \"assetId\": \"P-999\"}",
+          "mock_result": "{\"_tag\":\"MissingRecord\",\"code\":\"UnknownAsset\",\"message\":\"The synthetic asset registry does not contain this asset.\"}",
           "is_error": true
         }
       ]
@@ -97,21 +97,21 @@
       "get_maintenance_context": [
         {
           "parameter_conditions": [],
-          "mock_result": "{\"asset\": {\"id\": \"P-101\", \"type\": \"pump\", \"name\": \"Synthetic transfer pump\"}, \"history\": []}",
+          "mock_result": "{\"asset\":{\"id\":\"P-101\",\"type\":\"pump\",\"name\":\"Synthetic transfer pump\"},\"history\":[],\"openWorkOrders\":[]}",
           "is_error": false
         }
       ],
       "prepare_work_order": [
         {
           "parameter_conditions": [],
-          "mock_result": "{\"kind\": \"ready\", \"draft\": {\"id\": \"draft-synthetic-001\", \"report\": {\"assetId\": \"P-101\", \"category\": \"mechanical-leak\", \"observations\": \"Small seal leak while operating.\", \"facts\": {\"equipment\": \"operating\", \"leak\": \"significant\", \"fireOrSmoke\": \"no\", \"personnelHazard\": \"yes\", \"vibration\": \"normal\", \"temperature\": \"normal\"}}, \"assessment\": {\"kind\": \"eligible\", \"priority\": \"CRITICAL\", \"requiredSkill\": \"mechanical\", \"reasons\": [\"personnel-hazard\", \"significant-leak\"]}, \"expiresAt\": \"2099-01-01T00:00:00Z\", \"duplicateCandidates\": []}}",
+          "mock_result": "{\"kind\":\"ready\",\"draft\":{\"id\":\"draft-synthetic-001\",\"report\":{\"assetId\":\"P-101\",\"category\":\"mechanical-leak\",\"observations\":\"Significant active leak while operating, with personnel in danger.\",\"facts\":{\"equipment\":\"operating\",\"leak\":\"significant\",\"fireOrSmoke\":\"no\",\"personnelHazard\":\"yes\",\"vibration\":\"normal\",\"temperature\":\"normal\"}},\"assessment\":{\"kind\":\"eligible\",\"priority\":\"CRITICAL\",\"requiredSkill\":\"mechanical\",\"reasons\":[\"Reported personnel hazard, fire or smoke, or significant leak.\"]},\"expiresAt\":\"2099-01-01T00:00:00Z\",\"duplicateCandidates\":[]}}",
           "is_error": false
         }
       ],
       "confirm_work_order": [
         {
           "parameter_conditions": [],
-          "mock_result": "{\"operation\": \"created\", \"workOrder\": {\"id\": \"WO-synthetic-001\", \"reportCount\": 1, \"lifecycle\": \"PRIORITIZED\", \"priority\": \"CRITICAL\", \"allocation\": {\"kind\": \"queued\", \"escalationRequired\": true}}, \"assignments\": []}",
+          "mock_result": "{\"operation\":\"created\",\"workOrder\":{\"id\":\"WO-synthetic-001\",\"reportCount\":1,\"lifecycle\":\"PRIORITIZED\",\"priority\":\"CRITICAL\",\"allocation\":{\"kind\":\"queued\",\"escalationRequired\":true}},\"assignments\":[]}",
           "is_error": false
         }
       ]
@@ -131,21 +131,21 @@
       "get_maintenance_context": [
         {
           "parameter_conditions": [],
-          "mock_result": "{\"asset\": {\"id\": \"P-101\", \"type\": \"pump\", \"name\": \"Synthetic transfer pump\"}, \"history\": []}",
+          "mock_result": "{\"asset\":{\"id\":\"P-101\",\"type\":\"pump\",\"name\":\"Synthetic transfer pump\"},\"history\":[],\"openWorkOrders\":[]}",
           "is_error": false
         }
       ],
       "prepare_work_order": [
         {
           "parameter_conditions": [],
-          "mock_result": "{\"kind\": \"manual-review\", \"draft\": {\"id\": \"draft-synthetic-001\", \"report\": {\"assetId\": \"P-101\", \"category\": \"unclassified\", \"observations\": \"The pump sounds strange.\", \"facts\": {\"equipment\": \"unknown\", \"leak\": \"unknown\", \"fireOrSmoke\": \"unknown\", \"personnelHazard\": \"unknown\", \"vibration\": \"unknown\", \"temperature\": \"unknown\"}}, \"assessment\": {\"kind\": \"manual-review\", \"knownPriority\": null, \"missing\": [\"category\", \"equipment\", \"leak\", \"fireOrSmoke\", \"personnelHazard\", \"vibration\", \"temperature\"], \"reasons\": [\"missing-facts\"]}, \"expiresAt\": \"2099-01-01T00:00:00Z\", \"duplicateCandidates\": []}}",
+          "mock_result": "{\"kind\":\"manual-review\",\"draft\":{\"id\":\"draft-synthetic-001\",\"report\":{\"assetId\":\"P-101\",\"category\":\"unclassified\",\"observations\":\"The pump sounds strange.\",\"facts\":{\"equipment\":\"unknown\",\"leak\":\"unknown\",\"fireOrSmoke\":\"unknown\",\"personnelHazard\":\"unknown\",\"vibration\":\"unknown\",\"temperature\":\"unknown\"}},\"assessment\":{\"kind\":\"manual-review\",\"knownPriority\":null,\"missing\":[\"equipment\",\"leak\",\"fireOrSmoke\",\"personnelHazard\",\"vibration\",\"temperature\",\"category\"],\"reasons\":[\"Required facts remain unknown or the category is unclassified.\"]},\"expiresAt\":\"2099-01-01T00:00:00Z\",\"duplicateCandidates\":[]}}",
           "is_error": false
         }
       ],
       "confirm_work_order": [
         {
           "parameter_conditions": [],
-          "mock_result": "{\"operation\": \"created\", \"workOrder\": {\"id\": \"WO-synthetic-001\", \"reportCount\": 1, \"lifecycle\": \"PRIORITIZED\", \"priority\": null, \"allocation\": {\"kind\": \"held\", \"reasons\": [\"missing-facts\"]}}, \"assignments\": []}",
+          "mock_result": "{\"operation\":\"created\",\"workOrder\":{\"id\":\"WO-synthetic-001\",\"reportCount\":1,\"lifecycle\":\"VALIDATED\",\"priority\":null,\"allocation\":{\"kind\":\"held\",\"reasons\":[\"Required facts remain unknown or the category is unclassified.\"]}},\"assignments\":[]}",
           "is_error": false
         }
       ]
