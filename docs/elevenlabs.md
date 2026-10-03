@@ -125,7 +125,9 @@ Use the ElevenLabs dashboard to inspect failed criteria and transcripts.
 These simulations evaluate agent behavior against deterministic mocked tool responses.
 They do not prove actual webhook execution, Postgres persistence, dispatch concurrency, or audio quality.
 Record the invocation identifier and result counts only after a real run.
-No live simulation result is claimed by this setup.
+The recorded live run passed all five scenarios.
+See [the result](evidence/voice-evals.json).
+The CLI still requires actual successful results for any future run.
 
 ## Record a voice demonstration
 

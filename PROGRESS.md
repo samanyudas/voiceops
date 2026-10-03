@@ -26,18 +26,25 @@ Lint, strict type checks, build, selftest, repository policy, Compose configurat
 The combined suite checks every voice mock against the compiled API schemas and actual priority policy.
 An observed technician CLI truncation now has a failing-before and passing-after HTTP regression.
 A separate scripted HTTP demo assigned electrical work immediately, queued mechanical work, and reassigned it after the actual technician CLI released capacity.
-The Linux Postgres CI job is configured but has not run on GitHub for this branch yet.
-No live ElevenLabs conversation, voice test, recording, or production readiness claim exists.
+All six product CI jobs passed on PR 9 at 75d1007, including real Postgres integration and source packaging.
+The committed source archive also installed and passed all 77 tests locally.
+Five live ElevenLabs mocked simulations passed with zero failures or cancellations.
+An actual hosted audio conversation used computer-generated operator speech and called all three webhook tools successfully.
+The resulting HIGH-priority electrical work order queued, then assigned Tech-02 after the actual technician CLI released capacity.
+No human microphone, subjective audio-quality, or production readiness claim exists.
 
 ## Blockers
 
 The user supplied an ElevenLabs API key, stored only in the ignored local environment file.
-Automatic approval review requires explicit approval for transferring the backend tool credential to ElevenLabs and the Cloudflare tunnel.
-Cloud resource creation and live tests wait for that approval.
+The user approved both credential destinations explicitly.
+The workspace secret, three tools, agent, and five scenarios are provisioned.
+The temporary tunnel and local backend must run for hosted webhook calls.
 The backend credential boundary does not independently enforce human consent or personal technician identity.
 The PoC has no manual-review release action.
 
 ## Next step
 
-Verify the committed source archive and publish the product PR for live CI and maintainer review.
-Then provision the hosted agent and run live tests after the pending credential-transfer approval.
+PR 9 is open for maintainer review.
+The 44.8-second demonstration is in docs/demo.mp4.
+Update GitHub CI evidence after the final artifact commit.
+Keep the temporary backend and tunnel available while reviewing the hosted agent.

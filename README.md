@@ -9,7 +9,10 @@ The project separates language understanding from deterministic operational cont
 All equipment, technicians, history, and work orders are fictional.
 The backend and technician CLI run locally.
 Hosted ElevenLabs configuration and five mocked conversational scenarios are prepared.
-Live voice tests and a voice recording remain pending account credentials and a public HTTPS tunnel.
+Five live ElevenLabs simulations passed.
+A hosted audio conversation with synthetic operator speech called the real backend and created queued work.
+The technician CLI then released capacity and assigned that work to Tech-02.
+The hosted webhook demonstration needs the temporary local backend and HTTPS tunnel.
 
 ```mermaid
 flowchart TD
@@ -25,6 +28,14 @@ flowchart TD
   Technician[Technician CLI resolves work] --> Backend
   Backend --> Reassign[Release capacity and drain queue]
 ```
+
+## Watch the demonstration
+
+[Watch the 44.8-second recorded demonstration](docs/demo.mp4).
+The video combines actual hosted conversation audio with verified backend states.
+The operator speech is computer-generated.
+[The live conversation record](docs/evidence/live-conversation.json) contains the persisted report and reassignment result.
+[The live simulation record](docs/evidence/voice-evals.json) contains the five-scenario result.
 
 ## Start here
 

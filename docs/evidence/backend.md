@@ -48,9 +48,16 @@ The independent reviewer did not execute those suites.
 
 ## Evidence limits
 
-No hosted voice conversation or live ElevenLabs simulation ran for this record.
+The later live verification passed all five mocked ElevenLabs simulations.
+See [the simulation result](voice-evals.json).
+An actual audio conversation called all three webhook tools without tool errors.
+Its persisted report queued and then assigned Tech-02 after the technician CLI released capacity.
+See [the conversation record](live-conversation.json) and [44.8-second demonstration](../demo.mp4).
+The operator audio was computer-generated, with no human microphone.
 No audio quality, production readiness, throughput, or multi-facility scalability result exists.
 The PoC uses one facility dispatcher lock.
 The backend cannot independently prove verbal consent or personal technician identity.
 Manual-review holds have no supervisor release action in this PoC.
-Source archive and GitHub CI results must be recorded separately after they run.
+The source archive from 75d1007 installed and passed all 77 tests in a clean extracted checkout.
+[Product CI](https://github.com/samanyudas/voiceops/actions/runs/37112964144) passed all six jobs at 75d1007.
+Later evidence-only revisions require their own current CI result.
