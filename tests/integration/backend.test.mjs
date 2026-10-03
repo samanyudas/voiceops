@@ -247,3 +247,10 @@ test('concurrent resolution with one action key releases and reallocates exactly
   const results=await Promise.all([act(busy,'resolve','same-resolution'),act(busy,'resolve','same-resolution')]);assert.deepEqual(results[0],results[1]);
   const snapshot=await state();assert.equal(snapshot.events.filter(e=>e.workOrderId===busy.id&&e.action==='CAPACITY_RELEASED').length,1);assert.equal(snapshot.assignments.length,3);assert.equal(snapshot.assignments.filter(a=>a.releasedAt===null).length,2);
 });
+test('priority rank cannot be null or inconsistent with the reported priority',async()=>{
+  const order=(await create({facts:{fireOrSmoke:'yes'}})).workOrder;
+  await assert.rejects(query('UPDATE work_orders SET priority_rank=NULL WHERE id=$1',[order.id]),error=>error.reason._tag==='ConstraintError');
+  await assert.rejects(query('UPDATE work_orders SET priority_rank=3 WHERE id=$1',[order.id]),error=>error.reason._tag==='ConstraintError');
+  const held=(await create({facts:{equipment:'unknown'}})).workOrder;
+  await assert.rejects(query('UPDATE work_orders SET priority_rank=0 WHERE id=$1',[held.id]),error=>error.reason._tag==='ConstraintError');
+});

@@ -18,7 +18,7 @@ The hosted voice configuration belongs to the parallel integration branch.
 
 The baseline passed all 45 maintenance checks before implementation.
 Final Node 24.21.0 verification passed all 61 policy, credential-boundary, and maintenance tests.
-The final real HTTP and Postgres suite passed all 31 tests on Node 24.21.0, npm 12.2.0, and Postgres 18.6.
+The final real HTTP and Postgres suite passed all 32 tests on Node 24.21.0, npm 12.2.0, and Postgres 18.6.
 This includes expiry after a lock wait, duplicate branches, manual holds, priority and FIFO order, races, rollback, persistence, retries, and CLI reassignment.
 Lint, strict type checks, build, selftest, repository policy, Compose configuration, and whitespace checks pass.
 The Linux Postgres CI job is configured but cannot run before the parent publishes this branch.
