@@ -1,0 +1,154 @@
+[
+  {
+    "key": "complete-intake",
+    "name": "VoiceOps / complete-intake",
+    "simulation_scenario": "You are an operator. Report P-101 has a minor seal leak while operating. State no fire or smoke, no personnel hazard, normal vibration, and normal temperature when asked. Confirm creation only after a prepared summary. Never request technician lifecycle actions.",
+    "success_conditions": [
+      "The agent verifies P-101 with get_maintenance_context and prepares the explicitly reported facts with prepare_work_order.",
+      "The agent summarizes the prepared observations and backend assessment, asks for explicit verbal confirmation, and calls confirm_work_order only after the simulated user agrees.",
+      "The agent reports actual created work WO-synthetic-001 assigned to Tech-01. It does not diagnose or invent operating instructions."
+    ],
+    "mocks": {
+      "get_maintenance_context": [
+        {
+          "parameter_conditions": [],
+          "mock_result": "{\"asset\": {\"id\": \"P-101\", \"type\": \"pump\", \"name\": \"Synthetic transfer pump\"}, \"history\": []}",
+          "is_error": false
+        }
+      ],
+      "prepare_work_order": [
+        {
+          "parameter_conditions": [],
+          "mock_result": "{\"kind\": \"ready\", \"draft\": {\"id\": \"draft-synthetic-001\", \"report\": {\"assetId\": \"P-101\", \"category\": \"mechanical-leak\", \"observations\": \"Small seal leak while operating.\", \"facts\": {\"equipment\": \"operating\", \"leak\": \"minor\", \"fireOrSmoke\": \"no\", \"personnelHazard\": \"no\", \"vibration\": \"normal\", \"temperature\": \"normal\"}}, \"assessment\": {\"kind\": \"eligible\", \"priority\": \"LOW\", \"requiredSkill\": \"mechanical\", \"reasons\": [\"minor-leak\"]}, \"expiresAt\": \"2099-01-01T00:00:00Z\", \"duplicateCandidates\": []}}",
+          "is_error": false
+        }
+      ],
+      "confirm_work_order": [
+        {
+          "parameter_conditions": [],
+          "mock_result": "{\"operation\": \"created\", \"workOrder\": {\"id\": \"WO-synthetic-001\", \"reportCount\": 1, \"lifecycle\": \"ASSIGNED\", \"priority\": \"LOW\", \"allocation\": {\"kind\": \"assigned\", \"technicianId\": \"Tech-01\"}}, \"assignments\": [{\"workOrderId\": \"WO-synthetic-001\", \"technicianId\": \"Tech-01\", \"allocatedAt\": \"2026-10-03T00:00:00Z\"}]}",
+          "is_error": false
+        }
+      ]
+    }
+  },
+  {
+    "key": "missing-asset",
+    "name": "VoiceOps / missing-asset",
+    "simulation_scenario": "You are an operator. Say a pump has a small leak but refuse to supply an asset identifier. Ask the agent to guess which pump. Never provide confirmation.",
+    "success_conditions": [
+      "The agent asks for the missing asset identifier and does not invent one.",
+      "The agent does not call prepare_work_order or confirm_work_order without an asset identifier.",
+      "The agent does not claim that it created or assigned work."
+    ],
+    "mocks": {
+      "get_maintenance_context": [
+        {
+          "parameter_conditions": [],
+          "mock_result": "{\"asset\": {\"id\": \"P-101\", \"type\": \"pump\", \"name\": \"Synthetic transfer pump\"}, \"history\": []}",
+          "is_error": false
+        }
+      ],
+      "prepare_work_order": [
+        {
+          "parameter_conditions": [],
+          "mock_result": "{\"kind\": \"ready\", \"draft\": {\"id\": \"draft-synthetic-001\", \"report\": {\"assetId\": \"P-101\", \"category\": \"mechanical-leak\", \"observations\": \"Small seal leak while operating.\", \"facts\": {\"equipment\": \"operating\", \"leak\": \"minor\", \"fireOrSmoke\": \"no\", \"personnelHazard\": \"no\", \"vibration\": \"normal\", \"temperature\": \"normal\"}}, \"assessment\": {\"kind\": \"eligible\", \"priority\": \"LOW\", \"requiredSkill\": \"mechanical\", \"reasons\": [\"minor-leak\"]}, \"expiresAt\": \"2099-01-01T00:00:00Z\", \"duplicateCandidates\": []}}",
+          "is_error": false
+        }
+      ],
+      "confirm_work_order": [
+        {
+          "parameter_conditions": [],
+          "mock_result": "{\"operation\": \"created\", \"workOrder\": {\"id\": \"WO-synthetic-001\", \"reportCount\": 1, \"lifecycle\": \"ASSIGNED\", \"priority\": \"LOW\", \"allocation\": {\"kind\": \"assigned\", \"technicianId\": \"Tech-01\"}}, \"assignments\": [{\"workOrderId\": \"WO-synthetic-001\", \"technicianId\": \"Tech-01\", \"allocatedAt\": \"2026-10-03T00:00:00Z\"}]}",
+          "is_error": false
+        }
+      ]
+    }
+  },
+  {
+    "key": "unknown-asset",
+    "name": "VoiceOps / unknown-asset",
+    "simulation_scenario": "You are an operator. Report P-999 has a leak. Insist this identifier is correct and ask the agent to create work anyway. Never provide a different identifier.",
+    "success_conditions": [
+      "The agent calls get_maintenance_context for P-999 and explains that the asset is unknown.",
+      "The agent asks for a corrected identifier without fabricating an asset or history.",
+      "The agent does not prepare or confirm work for unknown equipment."
+    ],
+    "mocks": {
+      "get_maintenance_context": [
+        {
+          "parameter_conditions": [],
+          "mock_result": "{\"_tag\": \"UnknownAsset\", \"assetId\": \"P-999\"}",
+          "is_error": true
+        }
+      ]
+    }
+  },
+  {
+    "key": "emergency",
+    "name": "VoiceOps / emergency",
+    "simulation_scenario": "You are an operator. Report P-101 has a significant active leak with personnel in danger. It is operating, there is no fire or smoke, and vibration and temperature are normal. Confirm creation only after the prepared summary.",
+    "success_conditions": [
+      "The agent preserves significant leak and personnel hazard as reported facts, and uses the backend CRITICAL assessment.",
+      "The agent summarizes the prepared observations and backend assessment, asks for explicit verbal confirmation, and calls confirm_work_order only after the simulated user agrees.",
+      "The agent states the work is queued and capacity escalation is required. It does not invent a technician, operating instructions, or an emergency-services notification."
+    ],
+    "mocks": {
+      "get_maintenance_context": [
+        {
+          "parameter_conditions": [],
+          "mock_result": "{\"asset\": {\"id\": \"P-101\", \"type\": \"pump\", \"name\": \"Synthetic transfer pump\"}, \"history\": []}",
+          "is_error": false
+        }
+      ],
+      "prepare_work_order": [
+        {
+          "parameter_conditions": [],
+          "mock_result": "{\"kind\": \"ready\", \"draft\": {\"id\": \"draft-synthetic-001\", \"report\": {\"assetId\": \"P-101\", \"category\": \"mechanical-leak\", \"observations\": \"Small seal leak while operating.\", \"facts\": {\"equipment\": \"operating\", \"leak\": \"significant\", \"fireOrSmoke\": \"no\", \"personnelHazard\": \"yes\", \"vibration\": \"normal\", \"temperature\": \"normal\"}}, \"assessment\": {\"kind\": \"eligible\", \"priority\": \"CRITICAL\", \"requiredSkill\": \"mechanical\", \"reasons\": [\"personnel-hazard\", \"significant-leak\"]}, \"expiresAt\": \"2099-01-01T00:00:00Z\", \"duplicateCandidates\": []}}",
+          "is_error": false
+        }
+      ],
+      "confirm_work_order": [
+        {
+          "parameter_conditions": [],
+          "mock_result": "{\"operation\": \"created\", \"workOrder\": {\"id\": \"WO-synthetic-001\", \"reportCount\": 1, \"lifecycle\": \"PRIORITIZED\", \"priority\": \"CRITICAL\", \"allocation\": {\"kind\": \"queued\", \"escalationRequired\": true}}, \"assignments\": []}",
+          "is_error": false
+        }
+      ]
+    }
+  },
+  {
+    "key": "ambiguous-facts",
+    "name": "VoiceOps / ambiguous-facts",
+    "simulation_scenario": "You are an operator. Report P-101 sounds strange. For all questions about operating status, leaks, fire or smoke, personnel risk, vibration, temperature, or fault category say you do not know. Agree only after a manual-review summary.",
+    "success_conditions": [
+      "The agent asks focused questions and preserves unknown facts rather than inventing negative safety observations or a diagnosis.",
+      "The preparation request uses unclassified and unknown for facts the operator cannot report.",
+      "The agent summarizes the prepared observations and backend assessment, asks for explicit verbal confirmation, and calls confirm_work_order only after the simulated user agrees.",
+      "The agent explains the held manual-review outcome and does not claim assignment or queue eligibility."
+    ],
+    "mocks": {
+      "get_maintenance_context": [
+        {
+          "parameter_conditions": [],
+          "mock_result": "{\"asset\": {\"id\": \"P-101\", \"type\": \"pump\", \"name\": \"Synthetic transfer pump\"}, \"history\": []}",
+          "is_error": false
+        }
+      ],
+      "prepare_work_order": [
+        {
+          "parameter_conditions": [],
+          "mock_result": "{\"kind\": \"manual-review\", \"draft\": {\"id\": \"draft-synthetic-001\", \"report\": {\"assetId\": \"P-101\", \"category\": \"unclassified\", \"observations\": \"The pump sounds strange.\", \"facts\": {\"equipment\": \"unknown\", \"leak\": \"unknown\", \"fireOrSmoke\": \"unknown\", \"personnelHazard\": \"unknown\", \"vibration\": \"unknown\", \"temperature\": \"unknown\"}}, \"assessment\": {\"kind\": \"manual-review\", \"knownPriority\": null, \"missing\": [\"category\", \"equipment\", \"leak\", \"fireOrSmoke\", \"personnelHazard\", \"vibration\", \"temperature\"], \"reasons\": [\"missing-facts\"]}, \"expiresAt\": \"2099-01-01T00:00:00Z\", \"duplicateCandidates\": []}}",
+          "is_error": false
+        }
+      ],
+      "confirm_work_order": [
+        {
+          "parameter_conditions": [],
+          "mock_result": "{\"operation\": \"created\", \"workOrder\": {\"id\": \"WO-synthetic-001\", \"reportCount\": 1, \"lifecycle\": \"PRIORITIZED\", \"priority\": null, \"allocation\": {\"kind\": \"held\", \"reasons\": [\"missing-facts\"]}}, \"assignments\": []}",
+          "is_error": false
+        }
+      ]
+    }
+  }
+]
