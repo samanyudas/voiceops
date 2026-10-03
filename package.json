@@ -1,0 +1,31 @@
+{
+  "name": "voiceops",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Maintenance foundation for the synthetic VoiceOps proof of concept",
+  "engines": { "node": ">=24.21.0 <27", "npm": ">=12.2.0 <13" },
+  "packageManager": "npm@12.2.0",
+  "scripts": {
+    "clean": "node tools/clean.mjs",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "selftest": "node dist/tools/repository-policy.js --selftest",
+    "check:repo": "node dist/tools/repository-policy.js",
+    "eval": "npm run build && node --test tests/repository-policy.test.mjs",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run selftest && npm run check:repo",
+    "package:source": "node tools/package-source.mjs",
+    "check:package": "node tools/check-package.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.1",
+    "eslint": "10.11.0",
+    "globals": "17.13.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.0",
+    "yaml": "2.9.1"
+  }
+}

@@ -189,11 +189,14 @@ export async function run({ api, eventName, event, now = new Date() }) {
     if (!eligible(issue) || issue.state !== 'open' || humanAfter(comments, ask.comment.created_at) ||
         history.filter(value => value.kind === 'ask').at(-1)?.comment.id !== ask.comment.id ||
         history.some(value => value.kind === 'fix' && !shas.includes(value.sha))) continue;
+    const before = api.dryRun ? [] : await api.list(`/issues/${issue.number}/events`);
+    const priorTransitions = new Set(before.filter(item => ['closed', 'reopened'].includes(item.event)).map(item => item.id));
     await write('PATCH', `/issues/${issue.number}`, { state: 'closed', state_reason: 'not_planned' });
     if (!api.dryRun) {
       const transitions = (await api.list(`/issues/${issue.number}/events`)).filter(item => ['closed', 'reopened'].includes(item.event));
-      const closed = transitions.at(-1);
-      if (closed?.event === 'closed' && closed.actor?.login === BOT && closed.actor?.type === 'Bot') {
+      const added = transitions.filter(item => !priorTransitions.has(item.id));
+      const closed = added[0];
+      if (added.length === 1 && closed?.event === 'closed' && closed.actor?.login === BOT && closed.actor?.type === 'Bot') {
         await comment(issue.number, `Closed this release confirmation request after 14 days without a human reply. Reply if the bug remains and this follow-up will reopen the issue.\n\n${marker({ kind: 'closed', ask: ask.comment.id, event: closed.id })}`);
       }
     }

@@ -40,6 +40,8 @@ Immediately before closure, the workflow reads the issue and all comments again.
 A reply that races with closure is recovered by the comment event or the next daily run.
 
 A closure receipt records the exact GitHub issue event ID.
+A receipt requires exactly one new state transition after the pre-closure snapshot.
+Intervening transitions prevent automatic attribution and require maintainer recovery.
 A later human reply reopens the issue only if its most recent state transition matches that bot closure receipt.
 Manual closures and unrelated bot closures remain closed.
 If execution stops between closure and its receipt, a maintainer must reopen the issue.

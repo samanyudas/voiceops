@@ -1,0 +1,6 @@
+ts	phase	decision	why	evidence	result
+2026-10-03T00:13:06.006450+00:00	frame	Keep the accepted TypeScript layout instead of copying Swift directories	The reference app and VoiceOps have different build artifacts	docs/ARCHITECTURE.md	implemented
+2026-10-03T00:13:06.006880+00:00	verification	Pin TypeScript 6.0.3 rather than the newest release	The linter declares TypeScript support below 6.1	package-lock.json	local checks pass
+2026-10-03T00:13:06.006883+00:00	runtime	Use the pinned Node and npm wrapper	The default shell exposed incompatible npm 11.19.1	CONTRIBUTING.md	installation repaired
+2026-10-03T00:13:06.006884+00:00	review	Fix independent reviewer findings and add regression tests	Bot closure attribution and policy escape paths must be tested	tests/issue-lifecycle.test.mjs; tests/repository-policy.test.mjs	42 tests pass
+2026-10-03T00:13:06.006886+00:00	protection	Require compatibility checks and one approving review on main	Privileged workflow changes need review and enforceable checks	https://api.github.com/repos/samanyudas/voiceops/branches/main/protection	API accepted

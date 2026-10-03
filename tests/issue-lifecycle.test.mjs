@@ -44,6 +44,7 @@ function fixture(options = {}) {
       if (method === 'PATCH') {
         state.issue.state = body.state;
         state.events.push({ id: id++, event: body.state === 'closed' ? 'closed' : 'reopened', actor: bot, created_at: due.toISOString() });
+        options.afterPatch?.(state);
       }
       if (method === 'POST' && path.endsWith('/labels')) state.issue.labels = [...new Set([...state.issue.labels, ...body.labels])];
       if (method === 'DELETE') state.issue.labels = state.issue.labels.filter(value => value !== decodeURIComponent(path.split('/').at(-1)));
@@ -190,6 +191,17 @@ test('manual closures and unrelated bot closures never reopen', async () => {
     await f.execute('issue_comment', { issue: { number: 1 } });
     assert.equal(f.state.issue.state, 'closed');
   }
+});
+
+test('intervening state transitions cannot be adopted as this workflow closure', async () => {
+  const f = fixture({ comments: [comment(fix(sha)), comment(ask(), 2)], afterPatch(state) {
+    state.events.push({ id: 800, event: 'reopened', actor: human }, { id: 801, event: 'closed', actor: bot });
+  } });
+  await f.execute();
+  assert.equal(records(f.state.comments).some(value => value.kind === 'closed'), false);
+  f.state.comments.push({ id: 999, body: 'Still broken', user: human, created_at: '2026-01-16T00:00:00Z' });
+  await f.execute('issue_comment', { issue: { number: 1 } });
+  assert.equal(f.state.issue.state, 'closed');
 });
 
 test('dry-run orchestration performs no writes for merges, requests, or closure', async () => {
