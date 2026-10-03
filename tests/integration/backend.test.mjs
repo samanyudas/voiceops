@@ -225,7 +225,9 @@ test('demo seed is idempotent and the real technician CLI resolves queued work',
   const queued=(await create({facts:{equipment:'unavailable'}})).workOrder;assert.equal(queued.allocation.kind,'queued');
   const command=spawn(process.execPath,['dist/tools/technician.js','resolve','demo-busy-mechanical','Tech-03','demo-cli-resolve'],{env:{...process.env,VOICEOPS_URL:base,TECHNICIAN_API_KEY:technicianKey}});
   let output='';command.stdout.on('data',chunk=>{output+=chunk.toString();});command.stderr.on('data',chunk=>{output+=chunk.toString();});
-  const [code]=await once(command,'exit');assert.equal(code,0,output);assert.match(output,/RESOLVED/);
+  const [code]=await once(command,'exit');assert.equal(code,0,output);
+  const response=JSON.parse(output);assert.equal(response.status,200);assert.equal(response.result.workOrder.lifecycle,'RESOLVED');
+  assert.deepEqual(response.result.assignments.map(a=>({workOrderId:a.workOrderId,technicianId:a.technicianId})),[{workOrderId:queued.id,technicianId:'Tech-03'}]);
   const current=await state();assert.equal(current.workOrders.find(w=>w.id===queued.id).allocation.technicianId,'Tech-03');
 });
 test('reported performance degradation while operating derives medium priority',async()=>{

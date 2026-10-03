@@ -10,12 +10,18 @@ npm ci --ignore-scripts
 npm run verify
 ```
 
-If your shell exposes another toolchain, use the pinned wrapper for each npm command.
+Verify the active executables before installation and verification.
 
 ```sh
-npx --yes --package=node@24.21.0 --package=npm@12.2.0 -- npm ci --ignore-scripts
-npx --yes --package=node@24.21.0 --package=npm@12.2.0 -- npm run verify
+node --version
+npm --version
 ```
+
+Select Node 24.21.0 with your runtime manager.
+Use npm 12.2.0 for each npm command.
+The repository disables dependency install scripts.
+An npx request for a Node package does not prove that its executable runs under this setting.
+Record the versions that the commands actually report.
 
 For an older checkout, restore build, type checks, and characterization tests before a broad change.
 Record any existing failure before implementation.

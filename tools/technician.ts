@@ -10,7 +10,7 @@ const run = Effect.gen(function*() {
   const payload = endpoint === '/technician/actions' ? yield* Schema.decodeUnknownEffect(TechnicianAction)({ action,workOrderId,technicianId,requestId }) : undefined;
   const response = yield* Effect.tryPromise(() => fetch(`${base}${endpoint}`, payload === undefined ? { headers: { 'x-voiceops-tech-key': key }, redirect: 'error', signal: AbortSignal.timeout(10000) } : { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(10000), headers: { 'x-voiceops-tech-key': key, 'content-type': 'application/json' }, body: JSON.stringify(payload) }));
   const result: unknown = yield* Effect.tryPromise(() => response.json());
-  yield* Effect.logInfo({ status: response.status, result });
+  yield* Effect.sync(() => console.log(JSON.stringify({ status: response.status, result }, null, 2)));
   if (!response.ok) return yield* Effect.fail(new Error(`Technician request failed with HTTP ${response.status}.`));
 });
 NodeRuntime.runMain(run);
