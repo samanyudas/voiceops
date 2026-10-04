@@ -50,3 +50,15 @@ The backend and recorded demo are available on main.
 The 44.8-second demonstration is in docs/demo.mp4.
 Main requires all six product CI jobs, including the real Postgres integration test.
 Keep the temporary backend and tunnel available while reviewing the hosted agent.
+
+## PR 7 compiler repair
+
+The repair for PR 7's `dependabot/npm_and_yarn/typescript-7.0.2` branch includes main's Node 26 type update.
+PR 7's direct TypeScript 7 dependency fails npm peer resolution and removes the compiler API used by repository policy checks.
+The repair uses Microsoft's official aliases for the TypeScript 7 compiler and TypeScript 6 API.
+On 2026-10-04, lockfile generation and clean `npm ci --ignore-scripts` passed on Node 24.21.0 and npm 12.2.0.
+`npm run verify` passed lint, strict type checks, build, all 77 tests, selftest, and repository policy checks.
+`npm run eval` passed all 22 maintenance gate evaluations, and `git diff --check` passed.
+The TypeScript 7 build passed all 32 integration tests against an isolated synthetic Postgres database.
+Inspect PR 7's current CI and independent review before merge.
+PR 7 remains open for a maintainer decision.
