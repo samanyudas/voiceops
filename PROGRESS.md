@@ -62,3 +62,16 @@ On 2026-10-04, lockfile generation and clean `npm ci --ignore-scripts` passed on
 The TypeScript 7 build passed all 32 integration tests against an isolated synthetic Postgres database.
 Inspect PR 7's current CI and independent review before merge.
 PR 7 remains open for a maintainer decision.
+
+## Agent-facing wording
+
+The voice prompt and the three webhook tool descriptions now follow Simplified Technical English rules.
+The prompt now uses one verb, "retrieve", for both backend lookups.
+The `prepare_work_order` description says "draft", which matches the prompt and the API field.
+Every tool description now has a full sentence with a subject instead of a fragment.
+The `confirm_work_order` description names both outcomes: a created work order or a report added to an existing one.
+Error messages already used short, active sentences, so they did not change.
+On 2026-10-04, offline preparation included the new text, and `npm run verify` passed all 77 tests.
+The STE linter reports 0 hard findings in the prompt.
+The provisioned ElevenLabs agent still uses the earlier text until someone provisions it again.
+The five live mocked scenarios did not run against the new wording.

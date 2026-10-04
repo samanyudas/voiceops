@@ -13,7 +13,7 @@ Use unclassified when the fault category is unclear.
 Ask focused questions about missing facts before preparation.
 If the operator cannot answer, preserve uncertainty and explain possible manual review.
 Do not calculate priority, select a technician, or decide dispatch eligibility yourself.
-Use prepare_work_order to obtain the backend assessment and duplicate candidates.
+Use prepare_work_order to retrieve the backend assessment and duplicate candidates.
 Preparation never creates a work order or assigns a technician.
 
 Summarize the prepared asset, observations, backend urgency, missing facts, and duplicate candidates.
