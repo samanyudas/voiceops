@@ -48,9 +48,9 @@ export async function configuration(env, ids = {}) {
   const origin = publicBackendUrl(env.VOICEOPS_PUBLIC_URL);
   const secret = secretLocator(env.ELEVENLABS_TOOL_SECRET_ID);
   const tools = [
-    { name: toolNames[0], description: 'Verify the reported asset and retrieve synthetic maintenance history. Unknown assets return an error. This does not mutate work.', method: 'GET', path: '/assets/{assetId}', path_params_schema: { assetId: literal('The operator-reported asset identifier. Never invent an identifier.') } },
-    { name: toolNames[1], description: 'Prepare an expiring proposal from observations. Returns draft, assessment, and duplicateCandidates. Does not create or assign work.', method: 'POST', path: '/intake/prepare', request_body_schema: prepareSchema },
-    { name: toolNames[2], description: 'Create or update work only after explicit verbal confirmation of this draft and duplicate decision. Returns operation, workOrder, and assignments. Backend owns dispatch.', method: 'POST', path: '/intake/confirm', request_body_schema: confirmSchema },
+    { name: toolNames[0], description: 'Verify the reported asset and retrieve synthetic maintenance history. Unknown assets return an error. This tool does not change work orders.', method: 'GET', path: '/assets/{assetId}', path_params_schema: { assetId: literal('The operator-reported asset identifier. Never invent an identifier.') } },
+    { name: toolNames[1], description: 'Prepare an expiring draft from the operator observations. This tool returns draft, assessment, and duplicateCandidates. It does not create a work order or assign a technician.', method: 'POST', path: '/intake/prepare', request_body_schema: prepareSchema },
+    { name: toolNames[2], description: 'Create a work order or add a report to an existing work order. Call this tool only after explicit verbal confirmation of this draft and duplicate decision. This tool returns operation, workOrder, and assignments. The backend decides dispatch.', method: 'POST', path: '/intake/confirm', request_body_schema: confirmSchema },
   ].map(({ name, description, method, path, ...schema }) => ({ tool_config: {
     type: 'webhook', name, description, response_timeout_secs: 20, follow_redirects: false,
     execution_mode: 'immediate', tool_error_handling_mode: 'passthrough',
