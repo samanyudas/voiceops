@@ -6,15 +6,15 @@ Implement the accepted synthetic voice-to-work-order proof of concept.
 
 ## Current state
 
-Branch: feat/voiceops-backend.
+The backend is on main.
 The backend implements Effect HttpApi, Schema, services, Postgres migrations, durable drafts, receipts, and technician commands.
 Pure policy derives eligibility, urgency, skill matching, duplicate decisions, and valid lifecycle transitions.
 One Postgres advisory lock serializes allocation and release transactions.
 Active assignments are the only technician capacity source.
 The seed reproduces three assets, three technicians, history, and two jobs with occupied capacity.
 The hosted voice configuration is integrated with three tools and five mocked conversational scenarios.
-PR 3 merged into main at 978e491.
-All five main CI jobs and the issue-lifecycle dry run passed.
+PR 9 merged into main at 42fcd009 after independent verification.
+All six required CI jobs passed before that merge.
 
 ## Verification
 
@@ -44,9 +44,9 @@ The temporary tunnel and local backend must run for hosted webhook calls.
 The backend credential boundary does not independently enforce human consent or personal technician identity.
 The PoC has no manual-review release action.
 
-## Next step
+## Handoff
 
-PR 9 is open for maintainer review.
+The backend and recorded demo are available on main.
 The 44.8-second demonstration is in docs/demo.mp4.
 Main requires all six product CI jobs, including the real Postgres integration test.
 Keep the temporary backend and tunnel available while reviewing the hosted agent.
