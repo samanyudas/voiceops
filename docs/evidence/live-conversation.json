@@ -1,0 +1,88 @@
+{
+  "recordedAt": "2026-10-03T09:30:35.550Z",
+  "conversationId": "conv_8001m40hgbntes2vg52yz7z7x19k",
+  "input": "Computer-generated operator speech over the actual ElevenLabs WebSocket API. No human microphone.",
+  "outputAudioFormat": "pcm_16000",
+  "transcript": [
+    {
+      "role": "agent",
+      "text": "Which asset needs maintenance, and what did you observe?"
+    },
+    {
+      "role": "synthetic-operator",
+      "text": "C-201 electrical fault, unavailable, explicit negative safety facts, new occurrence."
+    },
+    {
+      "role": "transcribed-operator",
+      "text": "The asset identifier is C-201. The compressor is C-201. I report a new electrical fault. The equipment is unavailable. There is no leak. There is no fire or smoke. There is no personnel hazard. Vibration is normal. Temperature is normal. This is a new occurrence."
+    },
+    {
+      "role": "agent",
+      "text": "[slow] I have prepared a draft work order for asset C-201, the fictional process compressor. The backend assessment marks this as high priority due to the equipment being unavailable, requiring an electrical skill. There is one duplicate candidate, work order nine-f-four-nine-two-four-zero-b, which is currently assigned and low priority. You stated this is a new occurrence. Do you confirm that this is a new occurrence distinct from the existing work order, or is it the same issue? Please provide explicit verbal confirmation."
+    },
+    {
+      "role": "synthetic-operator",
+      "text": "Yes. This is a new occurrence. Create the work order."
+    },
+    {
+      "role": "transcribed-operator",
+      "text": "Yes, this is a new occurrence. Create the work order."
+    },
+    {
+      "role": "agent",
+      "text": "[clear] The work order has been created with identifier one six one two b two c three. It is currently prioritized as high and queued, waiting for a compatible technician to become available. Since there are no assignments yet, the system is holding the request until a technician with the required electrical skill can be dispatched."
+    }
+  ],
+  "backendReport": {
+    "assetId": "C-201",
+    "category": "electrical-fault",
+    "observations": "The compressor is C-201. I report a new electrical fault. The equipment is unavailable. There is no leak. There is no fire or smoke. There is no personnel hazard. Vibration is normal. Temperature is normal. This is a new occurrence.",
+    "facts": {
+      "equipment": "unavailable",
+      "leak": "none",
+      "fireOrSmoke": "no",
+      "personnelHazard": "no",
+      "vibration": "normal",
+      "temperature": "normal"
+    }
+  },
+  "queuedWorkOrder": {
+    "id": "1612b2c3-b19e-45e1-9aee-55e3f839adb6",
+    "reportCount": 1,
+    "lifecycle": "PRIORITIZED",
+    "priority": "HIGH",
+    "allocation": {
+      "kind": "queued",
+      "escalationRequired": false
+    }
+  },
+  "technicianResolution": {
+    "workOrder": {
+      "id": "9f49240b-141f-46c4-8666-f7212cb5c2de",
+      "reportCount": 1,
+      "lifecycle": "RESOLVED",
+      "priority": "LOW",
+      "allocation": {
+        "kind": "completed"
+      }
+    },
+    "assignments": [
+      {
+        "workOrderId": "1612b2c3-b19e-45e1-9aee-55e3f839adb6",
+        "technicianId": "Tech-02",
+        "allocatedAt": "2026-10-03 09:30:35.526088+00"
+      }
+    ]
+  },
+  "assignedWorkOrder": {
+    "id": "1612b2c3-b19e-45e1-9aee-55e3f839adb6",
+    "reportCount": 1,
+    "lifecycle": "ASSIGNED",
+    "priority": "HIGH",
+    "allocation": {
+      "kind": "assigned",
+      "technicianId": "Tech-02"
+    }
+  },
+  "limits": "Actual audio input/output and webhook mutation verified. No human microphone or subjective audio quality test."
+}

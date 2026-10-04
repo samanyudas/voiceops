@@ -3,8 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Maintenance foundation for the synthetic VoiceOps proof of concept",
-  "engines": { "node": ">=24.21.0 <27", "npm": ">=12.2.0 <13" },
+  "description": "Synthetic voice-to-work-order proof of concept with deterministic policy and durable Postgres dispatch",
+  "engines": {
+    "node": ">=24.21.0 <27",
+    "npm": ">=12.2.0 <13"
+  },
   "packageManager": "npm@12.2.0",
   "scripts": {
     "clean": "node tools/clean.mjs",
@@ -17,7 +20,11 @@
     "eval": "npm run build && node --test tests/repository-policy.test.mjs",
     "verify": "npm run lint && npm run typecheck && npm run test && npm run selftest && npm run check:repo",
     "package:source": "node tools/package-source.mjs",
-    "check:package": "node tools/check-package.mjs"
+    "check:package": "node tools/check-package.mjs",
+    "start": "node --env-file-if-exists=.env dist/tools/server.js",
+    "seed": "node --env-file-if-exists=.env dist/tools/seed.js",
+    "technician": "node --env-file-if-exists=.env dist/tools/technician.js",
+    "test:integration": "npm run build && node --test --test-timeout=30000 tests/integration/*.test.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -27,5 +34,10 @@
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.0",
     "yaml": "2.9.1"
+  },
+  "dependencies": {
+    "@effect/platform-node": "4.0.0",
+    "@effect/sql-pg": "4.0.0",
+    "effect": "4.0.0"
   }
 }

@@ -2,32 +2,51 @@
 
 ## Objective
 
-Establish repository maintenance before implementing the accepted voice workflow.
+Implement the accepted synthetic voice-to-work-order proof of concept.
 
 ## Current state
 
-Branch: chore/maintenance-foundation.
-The accepted spec and ADRs are on main at fbecc8d.
-Maintenance tooling, templates, and workflows are implemented on this branch.
-No application behavior is implemented.
+Branch: feat/voiceops-backend.
+The backend implements Effect HttpApi, Schema, services, Postgres migrations, durable drafts, receipts, and technician commands.
+Pure policy derives eligibility, urgency, skill matching, duplicate decisions, and valid lifecycle transitions.
+One Postgres advisory lock serializes allocation and release transactions.
+Active assignments are the only technician capacity source.
+The seed reproduces three assets, three technicians, history, and two jobs with occupied capacity.
+The hosted voice configuration is integrated with three tools and five mocked conversational scenarios.
+PR 3 merged into main at 978e491.
+All five main CI jobs and the issue-lifecycle dry run passed.
 
 ## Verification
 
-Pinned local verification passes 45 tests, lint, type checks, build, selftest, and repository checks.
-Live CI passed four compatibility jobs and source-package verification at 5c925c8.
-Local source-package verification passed for that committed source with all 45 tests.
-Independent review found no remaining serious defects in the review fixes.
-Model ablation benchmarks and real stable-release follow-up are not run.
+The baseline passed all 45 maintenance checks before implementation.
+Combined Node 24.21.0 verification passed all 77 policy, credential-boundary, voice-contract, and maintenance tests.
+The final real HTTP and Postgres suite passed all 32 tests on Node 24.21.0, npm 12.2.0, and Postgres 18.6.
+On 2026-10-04, a fresh independent verifier repeated the 77 offline tests, 32 integration tests, and clean source-package verification.
+Seven additional HTTP and CLI checks passed without a public-path defect.
+This includes expiry after a lock wait, duplicate branches, manual holds, priority and FIFO order, races, rollback, persistence, retries, and CLI reassignment.
+Lint, strict type checks, build, selftest, repository policy, Compose configuration, and whitespace checks pass.
+The combined suite checks every voice mock against the compiled API schemas and actual priority policy.
+An observed technician CLI truncation now has a failing-before and passing-after HTTP regression.
+A separate scripted HTTP demo assigned electrical work immediately, queued mechanical work, and reassigned it after the actual technician CLI released capacity.
+All six product CI jobs passed on PR 9 at 0cd6200, including real Postgres integration and source packaging.
+The committed source archive also installed and passed all 77 tests locally.
+Five live ElevenLabs mocked simulations passed with zero failures or cancellations.
+An actual hosted audio conversation used computer-generated operator speech and called all three webhook tools successfully.
+The resulting HIGH-priority electrical work order queued, then assigned Tech-02 after the actual technician CLI released capacity.
+No human microphone, subjective audio-quality, or production readiness claim exists.
 
 ## Blockers
 
-CodeRabbit provided a free-plan summary, which does not include a full line review.
-Greptile, Cursor Bugbot, and Macroscope activation remains unverified.
-Blacksmith does not support this personal repository under its documented setup.
-The release environment exists, but the account plan rejected required reviewers and wait timers.
-High-risk workflow changes require maintainer review before merge.
+The user supplied an ElevenLabs API key, stored only in the ignored local environment file.
+The user approved both credential destinations explicitly.
+The workspace secret, three tools, agent, and five scenarios are provisioned.
+The temporary tunnel and local backend must run for hosted webhook calls.
+The backend credential boundary does not independently enforce human consent or personal technician identity.
+The PoC has no manual-review release action.
 
 ## Next step
 
-PR 3 awaits maintainer approval before the workflows become active on main.
-Then implement the accepted product spec in small verified units.
+PR 9 is open for maintainer review.
+The 44.8-second demonstration is in docs/demo.mp4.
+Main requires all six product CI jobs, including the real Postgres integration test.
+Keep the temporary backend and tunnel available while reviewing the hosted agent.

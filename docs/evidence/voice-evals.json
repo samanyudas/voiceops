@@ -1,0 +1,22 @@
+{
+  "recordedAt": "2026-10-03T09:27:38.199119+00:00",
+  "agentId": "agent_5001m40h679wft59v9avgtvh5kpy",
+  "invocationId": "suite_8201m40h73jmf7dtnd4bmb5wvw7h",
+  "summary": {
+    "id": "suite_8201m40h73jmf7dtnd4bmb5wvw7h",
+    "total": 5,
+    "pending": 0,
+    "passed": 5,
+    "failed": 0,
+    "cancelled": 0
+  },
+  "scenarioKeys": [
+    "complete-intake",
+    "missing-asset",
+    "unknown-asset",
+    "emergency",
+    "ambiguous-facts"
+  ],
+  "tools": "All tools mocked. No actual backend mutations during these simulations.",
+  "limits": "Does not prove audio quality, webhook execution, or human consent."
+}
