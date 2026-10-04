@@ -47,7 +47,7 @@ jobs:
         run: npm run clean
 
   package:
-    needs: verify
+    needs: [verify, postgres-integration]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -68,6 +68,40 @@ jobs:
           path: artifacts/voiceops-source.tar.gz
           if-no-files-found: error
           retention-days: 14
+      - name: Post-run cleanup
+        if: always()
+        run: npm run clean
+
+  postgres-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:18-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873
+        env:
+          POSTGRES_USER: voiceops
+          POSTGRES_PASSWORD: synthetic-ci-test-only
+          POSTGRES_DB: voiceops_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U voiceops -d voiceops_test"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgres://voiceops:synthetic-ci-test-only@127.0.0.1:5432/voiceops_test
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm install --global npm@12.2.0 --ignore-scripts
+      - run: npm ci --ignore-scripts
+      - run: npm run test:integration
       - name: Post-run cleanup
         if: always()
         run: npm run clean

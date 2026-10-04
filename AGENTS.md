@@ -1,7 +1,8 @@
 # VoiceOps agent map
 
 VoiceOps uses TypeScript, Effect, and Postgres in its accepted design.
-The current checkout contains maintenance tooling and product specifications.
+The backend implements durable intake, dispatch, and technician workflow actions.
+Live ElevenLabs conversations still require separate credentials and verification.
 Read [PROGRESS.md](PROGRESS.md) before selecting work.
 
 ## Commands
@@ -12,6 +13,7 @@ Use Node 24.21.0 and npm 12.2.0.
 npm ci --ignore-scripts
 npm run verify
 npm run eval
+TEST_DATABASE_URL=postgres://voiceops:synthetic-test-password@127.0.0.1:5432/voiceops_test npm run test:integration
 npm run package:source
 npm run check:package
 ```

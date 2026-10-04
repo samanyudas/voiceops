@@ -1,0 +1,91 @@
+{
+  "recordedAt": "2026-10-03T09:15:24.151Z",
+  "interface": "Scripted HTTP operator requests and actual technician CLI. No voice conversation.",
+  "node": "v24.21.0",
+  "assetContext": {
+    "asset": {
+      "id": "C-201",
+      "name": "Fictional process compressor",
+      "type": "compressor"
+    },
+    "history": [
+      {
+        "at": "2026-10-02 09:14:40.032361+00",
+        "note": "Synthetic vibration report."
+      }
+    ],
+    "openWorkOrders": [
+      {
+        "id": "demo-busy-rotating",
+        "priority": "HIGH",
+        "lifecycle": "IN_PROGRESS",
+        "lastReportAt": "2026-10-03 09:14:40.036154+00"
+      }
+    ]
+  },
+  "electrical": {
+    "operation": "created",
+    "workOrder": {
+      "id": "9f49240b-141f-46c4-8666-f7212cb5c2de",
+      "reportCount": 1,
+      "lifecycle": "ASSIGNED",
+      "priority": "LOW",
+      "allocation": {
+        "kind": "assigned",
+        "technicianId": "Tech-02"
+      }
+    },
+    "assignments": [
+      {
+        "workOrderId": "9f49240b-141f-46c4-8666-f7212cb5c2de",
+        "technicianId": "Tech-02",
+        "allocatedAt": "2026-10-03 09:15:23.700665+00"
+      }
+    ]
+  },
+  "mechanicalBeforeRelease": {
+    "operation": "created",
+    "workOrder": {
+      "id": "1fad454d-0f48-42c0-8992-b5f9935993ae",
+      "reportCount": 1,
+      "lifecycle": "PRIORITIZED",
+      "priority": "HIGH",
+      "allocation": {
+        "kind": "queued",
+        "escalationRequired": false
+      }
+    },
+    "assignments": []
+  },
+  "technicianCli": "[19:15:24.136] INFO (#2): {\n  status: 200,\n  result: {\n    workOrder: {\n      id: 'demo-busy-mechanical',\n      reportCount: 1,\n      lifecycle: 'RESOLVED',\n      priority: 'HIGH',\n      allocation: [Object]\n    },\n    assignments: [ [Object] ]\n  }\n}",
+  "mechanicalAfterRelease": {
+    "id": "1fad454d-0f48-42c0-8992-b5f9935993ae",
+    "reportCount": 1,
+    "lifecycle": "ASSIGNED",
+    "priority": "HIGH",
+    "allocation": {
+      "kind": "assigned",
+      "technicianId": "Tech-03"
+    }
+  },
+  "activeAssignments": [
+    {
+      "workOrderId": "demo-busy-rotating",
+      "technicianId": "Tech-01",
+      "allocatedAt": "2026-10-03 09:14:40.037254+00",
+      "releasedAt": null
+    },
+    {
+      "workOrderId": "9f49240b-141f-46c4-8666-f7212cb5c2de",
+      "technicianId": "Tech-02",
+      "allocatedAt": "2026-10-03 09:15:23.700665+00",
+      "releasedAt": null
+    },
+    {
+      "workOrderId": "1fad454d-0f48-42c0-8992-b5f9935993ae",
+      "technicianId": "Tech-03",
+      "allocatedAt": "2026-10-03 09:15:24.122961+00",
+      "releasedAt": null
+    }
+  ]
+}

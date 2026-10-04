@@ -1,5 +1,6 @@
-# db
+# Db module
 
-Connection layers, migrations, and database constraints.
-No application implementation exists here yet.
-Read the [module boundaries](../../docs/ARCHITECTURE.md) before implementation.
+`connection.ts` configures PgClient and PgMigrator.
+`migrations.ts` defines the persisted schema and constraints.
+`decode.ts` validates stored domain records.
+`seed.ts` adds idempotent synthetic references and demonstration fixtures.

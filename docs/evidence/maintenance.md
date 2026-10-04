@@ -1,14 +1,15 @@
 # Maintenance evidence
 
 This record separates observed checks from configured workflows and unavailable external services.
-The application itself remains unimplemented.
+This record covers the maintenance baseline at its merge revision.
+See [PROGRESS.md](../../PROGRESS.md) for later product work.
 
 ## Local verification
 
 | Check | Evidence | Result |
 | --- | --- | --- |
-| Locked installation | Pinned Node 24.21.0 and npm 12.2.0 wrapper, with npm install --ignore-scripts | Passed, zero audit vulnerabilities |
-| Complete maintenance verification | npm run verify under the pinned wrapper | Passed 45 tests, lint, type checks, build, selftest, and repository checks |
+| Locked installation | npm 12.2.0 wrapper with npm install --ignore-scripts | Passed, zero audit vulnerabilities |
+| Complete maintenance verification | npm run verify under the npm 12.2.0 wrapper | Passed 45 tests, lint, type checks, build, selftest, and repository checks |
 | Command-boundary rejection | CLI fixture adds Date.now to a policy, then repairs it | Invalid checkout rejected, repaired checkout accepted |
 | Issue-follow-up contracts | Built-in Node tests with injected GitHub responses | Passed without external notifications |
 | Independent review | Fresh reviewer found opt-in, closure-attribution, trigger-syntax, and indexed-randomness defects | Follow-up review found no remaining serious defects and independently passed 45 tests |
@@ -16,8 +17,10 @@ The application itself remains unimplemented.
 
 ## GitHub configuration
 
-Main now requires four compatibility checks and the package check.
-It also requires one approving review and resolved conversations.
+At the maintenance merge, main required four compatibility checks and the package check.
+The original configuration also required one approving review and resolved conversations.
+At merge time, the live protection response had no required approving-review rule.
+The guarded merge used the exact independently verified head without an administrator bypass.
 The rules apply to administrators and prohibit force pushes and deletion.
 The GitHub protection API accepted these settings.
 
@@ -29,7 +32,18 @@ Check the latest PR revision separately from this recorded run.
 The release environment exists, but required reviewers and wait timers were rejected by the account plan.
 Those environment protections are not enforced.
 CodeRabbit activated on PR 3 and provided a free-plan summary, not a full line review.
-The maintenance workflows are not active on main until the PR merges.
+[PR 3](https://github.com/samanyudas/voiceops/pull/3) merged at `978e491e0f23ccf2dea5e06a46ad6b1b430131d9`.
+[Post-merge CI](https://github.com/samanyudas/voiceops/actions/runs/37110981770) passed all five jobs.
+[The issue-lifecycle dry run](https://github.com/samanyudas/voiceops/actions/runs/37111041151) passed on main without issue mutations.
+[Issue 2](https://github.com/samanyudas/voiceops/issues/2) closed after these checks.
+
+## Product acceptance gate
+
+On 2026-10-04, GitHub accepted `postgres-integration` as an additional required check for main.
+Readback confirmed strict checks, administrator enforcement, and required conversation resolution.
+The five existing required checks remain in place.
+No approving-review requirement exists in the live branch protection response.
+The documented maintainer approval requirement still applies to high-risk changes.
 
 ## User checklist status
 
@@ -40,11 +54,11 @@ The maintenance workflows are not active on main until the PR merges.
 | Document structure | Locally verified | Required-document, local-link, punctuation, and instruction-size checks |
 | New issue templates | Implemented | Bug and feature forms, with blank issues disabled |
 | Specialist PR review | Partial | CodeRabbit free-plan summary observed; full review and other app activation remain unverified |
-| CI and compatibility | Live review-fix run passed | Four runtime/platform jobs, source packaging, and cleanup at 5c925c8 |
+| CI and compatibility | Post-merge run passed | Four runtime/platform jobs, source packaging, and cleanup at 978e491 |
 | Clear task specification | Implemented | Accepted product spec and maintenance issue 2 |
 | Instructions and context | Implemented | Short map and task contract |
 | Inspect code before decisions | Observed | Empty repository inspected; reference workflow read before adaptation |
-| Real application verification | Pending product implementation | No voice agent or database workflow exists yet |
+| Real application verification | Separate product evidence | Maintenance tests alone do not prove the product workflow |
 | Repeated mistakes become checks | Locally verified | Policy and privileged-checkout gates with violating fixtures |
 | Rules and skills evaluated | Partial | Deterministic gate evals exist; controlled model ablation remains unrun |
 | Cloud and parallel scaling | Conditional | Local verification first; isolated worktrees used for this task |
@@ -67,4 +81,7 @@ Blacksmith's documented setup does not support a personal repository.
 
 Run the commands in CONTRIBUTING.md on a clean checkout.
 Use npm run package:source and npm run check:package for a committed source archive.
-Use the dry-run workflow to inspect real issue state without mutation after merge.
+Use the dry-run workflow to inspect real issue state without mutation.
+The original local wrapper requested Node 24, but that request alone did not prove its runtime version.
+The CI jobs used actions/setup-node with the recorded Node versions.
+Later product verification records the actual local Node executable and version.

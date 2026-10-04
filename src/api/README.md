@@ -1,5 +1,4 @@
-# api
+# Api module
 
-External contracts, authentication, and request decoding.
-No application implementation exists here yet.
-Read the [module boundaries](../../docs/ARCHITECTURE.md) before implementation.
+`definition.ts` owns the schema-first HTTP contract and generated OpenAPI schema.
+`server.ts` owns capability checks and handler wiring.

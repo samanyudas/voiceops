@@ -1,5 +1,4 @@
-# repositories
+# Repositories module
 
-Persistence reads and non-transactional access.
-No application implementation exists here yet.
-Read the [module boundaries](../../docs/ARCHITECTURE.md) before implementation.
+`reads.ts` returns validated asset context, work-order views, and a consistent state snapshot.
+It does not own assignment writes.

@@ -1,5 +1,6 @@
-# services
+# Services module
 
-Effectful intake, dispatch, and technician orchestration.
-No application implementation exists here yet.
-Read the [module boundaries](../../docs/ARCHITECTURE.md) before implementation.
+`intake.ts` normalizes assets, prepares drafts, and delegates confirmed mutations.
+`dispatch.ts` owns confirmation, allocation, queue draining, resolution, and their transactions.
+`technician-actions.ts` owns acknowledgement, start, and closure, and delegates capacity release.
+`runtime.ts` wires shared layers.

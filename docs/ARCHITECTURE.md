@@ -1,8 +1,8 @@
 # Module boundaries
 
 The accepted application design separates observations from deterministic operational decisions.
-The application modules are not implemented yet.
-Repository checks already enforce their import direction for future TypeScript sources.
+The application modules implement the accepted backend.
+Repository checks enforce their import direction for TypeScript sources.
 
 | Module | Allowed internal dependencies |
 | --- | --- |
@@ -24,4 +24,5 @@ Repositories can provide reads without splitting transaction-critical writes acr
 Read the [policy ADR](adr/0001-operational-policy-boundary.md) and [dispatch ADR](adr/0002-dispatch-transaction.md) before changing those decisions.
 
 Build and source checks cover present files.
-Empty module directories and accepted designs do not count as implemented features.
+Real HTTP and Postgres tests cover backend behavior.
+Live voice verification remains separate.
