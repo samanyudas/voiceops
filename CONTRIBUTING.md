@@ -23,6 +23,10 @@ The repository disables dependency install scripts.
 An npx request for a Node package does not prove that its executable runs under this setting.
 Record the versions that the commands actually report.
 
+The build and typecheck scripts run TypeScript 7 through the `tsc` executable from `@typescript/native`.
+The `typescript` alias supplies the TypeScript 6 compiler API required by ESLint and repository policy checks.
+This follows [Microsoft's side-by-side compiler guidance](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/).
+
 For an older checkout, restore build, type checks, and characterization tests before a broad change.
 Record any existing failure before implementation.
 
