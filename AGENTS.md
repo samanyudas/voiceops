@@ -14,12 +14,15 @@ npm ci --ignore-scripts
 npm run verify
 npm run eval
 TEST_DATABASE_URL=postgres://voiceops:synthetic-test-password@127.0.0.1:5432/voiceops_test npm run test:integration
+TEST_DATABASE_URL=postgres://voiceops:synthetic-test-password@127.0.0.1:5432/voiceops_test npm run test:e2e
 npm run package:source
 npm run check:package
 ```
 
 Run the actual affected behavior before declaring a feature complete.
 Maintenance checks do not prove voice, database, or technician behavior.
+Use [the E2E guide](docs/e2e.md) to select acceptance checks and read their verification limits.
+Run database suites sequentially when they share a test database.
 
 ## Work boundaries
 

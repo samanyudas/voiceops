@@ -67,6 +67,9 @@ node --env-file=.env tools/elevenlabs.mjs provision --live
 ```
 
 The script saves created identifiers in ignored `artifacts/elevenlabs/state.json`.
+`npm run clean` preserves `artifacts/elevenlabs/`, including resource IDs, invocation checkpoints, and operation locks.
+The isolated regression for [issue 12](https://github.com/samanyudas/voiceops/issues/12) checks this cleanup behavior.
+Keep a separate copy of this directory before changing checkouts or recovering an uncertain cloud operation.
 It saves a pending intent before each creation request.
 A repeated command skips resources with saved identifiers.
 A changed configuration stops provisioning before further writes.

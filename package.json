@@ -12,7 +12,7 @@
   "scripts": {
     "clean": "node tools/clean.mjs",
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.e2e.json --noEmit",
     "lint": "eslint . --max-warnings 0",
     "test": "npm run build && node --test tests/*.test.mjs",
     "selftest": "node dist/tools/repository-policy.js --selftest",
@@ -24,12 +24,15 @@
     "start": "node --env-file-if-exists=.env dist/tools/server.js",
     "seed": "node --env-file-if-exists=.env dist/tools/seed.js",
     "technician": "node --env-file-if-exists=.env dist/tools/technician.js",
-    "test:integration": "npm run build && node --test --test-timeout=30000 tests/integration/*.test.mjs"
+    "test:integration": "npm run build && node --test --test-timeout=30000 tests/integration/*.test.mjs",
+    "test:e2e": "npm run build && node tools/run-e2e.mjs",
+    "test:acceptance": "npm run test:integration && npm run test:e2e"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@types/node": "26.6.3",
     "@typescript/native": "npm:typescript@7.0.2",
+    "e2e": "0.17.0",
     "eslint": "10.11.0",
     "globals": "17.13.0",
     "typescript": "npm:@typescript/typescript6@6.0.2",
