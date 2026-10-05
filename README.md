@@ -59,6 +59,17 @@ Integration tests reset that synthetic test database.
 They check real HTTP requests, durable receipts, queue ordering, concurrency, rollback, and the technician CLI.
 They do not skip when Postgres is unavailable.
 
+Run the tester-army E2E suite against the same dedicated test database.
+Use `npm run test:acceptance` to run both database suites sequentially.
+
+```sh
+TEST_DATABASE_URL=postgres://voiceops:synthetic-test-password@127.0.0.1:5432/voiceops_test npm run test:e2e
+```
+
+The E2E suite runs the real backend, technician CLI, seed CLI, and offline ElevenLabs preparation CLI.
+It writes JSON, JUnit, and Markdown reports under `artifacts/e2e/`.
+Read [the E2E guide](docs/e2e.md) for database setup, the flow matrix, and live voice verification limits.
+
 Follow [the backend guide](docs/backend.md) to start Postgres, seed the demonstration, and run the server.
 Use [the API contract](docs/backend-api.md) for preparation, confirmation, and technician actions.
 Follow [the ElevenLabs guide](docs/elevenlabs.md) for offline configuration and later live provisioning.

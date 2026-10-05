@@ -75,3 +75,109 @@ On 2026-10-04, offline preparation included the new text, and `npm run verify` p
 The STE linter reports 0 hard findings in the prompt.
 The provisioned ElevenLabs agent still uses the earlier text until someone provisions it again.
 The five live mocked scenarios did not run against the new wording.
+
+## Tester-army E2E acceptance coverage
+
+The local branch is `test/tester-army-e2e`.
+The branch adds and uses `e2e@0.17.0` for all implemented HTTP routes, the seed CLI, every technician CLI command, and offline ElevenLabs configuration.
+The runner uses the `api` platform, one worker, zero retries, bounded cleanup, and no model provider or browser engine.
+`npm run typecheck` includes the E2E configuration, fixtures, and tests.
+`npm run test:acceptance` runs the existing Postgres integration suite and the tester-army suite sequentially.
+The existing `postgres-integration` CI job runs integration and E2E sequentially against an isolated Postgres service and uploads reports before cleanup.
+The source-package CI job retains its `verify` and `postgres-integration` dependencies.
+[The flow matrix](docs/e2e.md) maps the implemented paths and the retained deep transaction tests.
+
+The E2E work reproduced one product defect in the actual cleanup command.
+`npm run clean` deleted synthetic pending resource IDs, invocation checkpoints, and the operation lock in an isolated fixture.
+The failing-before test raised `ENOENT` when opening the fixture's `artifacts/elevenlabs/state.json`.
+The repaired cleaner preserves the complete `artifacts/elevenlabs/` directory and removes other generated files and directories.
+The regression checks retained contents, private file permissions, generated-output removal, and repeat cleanup.
+[Issue 12](https://github.com/samanyudas/voiceops/issues/12) tracks this confirmed defect and remains open for delivery and release verification.
+This reproduction does not establish why this checkout currently has no hosted configuration or checkpoint.
+
+On 2026-10-05, clean `npm ci --ignore-scripts` passed on Node 24.21.0 and npm 12.2.0.
+After the guard repair below, `npm run verify` passed lint, strict application and E2E type checks, build, all 79 offline tests, selftest, and repository policy checks.
+`npm run eval` passed all 22 maintenance gate evaluations.
+`npm run test:acceptance` passed all 32 integration tests and all 38 tester-army E2E tests against the isolated local Postgres 18.6 database.
+The E2E suite contains 29 backend cases and nine offline voice and cleanup cases.
+The final full E2E run identifier is `01a1096b-a1e0-7ac3-a899-0604d8c050c4`.
+Its JSON, JUnit, and Markdown reports are under `artifacts/e2e/`.
+The final sequential acceptance log is `artifacts/e2e-checks/guard-repair-acceptance.log`.
+The failing cleanup report is preserved under `artifacts/e2e-attempts/cleanup-before/`.
+An earlier test assertion used `DraftExpired` instead of the implemented `ExpiredDraft` code, and the final public HTTP 410 test now passes.
+The E2E runtime also accepts empty HTTP error bodies and recreates its database runtime after runner reloads.
+A later independent review confirmed the database URL guard defect, which is repaired and recorded below.
+
+The risk class is medium because this branch adds a dependency and workflow tooling and repairs cleanup behavior.
+Independent review, maintainer review, and live CI verification remain required before merge.
+The branch has no PR or published artifact from this task.
+Source packaging still needs a committed candidate because `package:source` archives `HEAD` rather than the uncommitted working tree.
+The current checkout has no local ElevenLabs API key, public webhook configuration, or provisioning checkpoint available for this task.
+No cloud provisioning, paid simulation, or new hosted audio conversation ran.
+The earlier voice recordings remain historical evidence, and live voice against this branch remains unverified.
+[The E2E decision record](docs/evidence/e2e-decisions.tsv) preserves the choices, failing evidence, and verification limits.
+
+## Test database guard repair and CI gate correction
+
+This section supersedes the earlier E2E handoff and CI job description for the current uncommitted candidate.
+Independent inspection found a second defect in both database test entry points.
+The guard validated the URL authority and path, but the installed Postgres driver replaces them with `host`, `port`, and `dbname` query parameters.
+Both real entry points accepted a synthetic localhost URL with `host=127.0.0.2` and reached server startup instead of rejecting the configuration.
+The controlled reproduction used an unbound loopback override and no remote or ordinary database.
+Both regression assertions failed with `host query override must fail at the configuration guard`.
+The failing-before log is `artifacts/e2e-attempts/database-target-before/guard.log`.
+[Issue 13](https://github.com/samanyudas/voiceops/issues/13) tracks the confirmed guard defect, with independent final verification pending.
+
+Both guards now require a Postgres URL, a `localhost` or `127.0.0.1` host, and a simple database name ending in `_test`.
+Both guards reject all URL query parameters, fragments, and encoded or multi-segment database paths before creating a runtime or starting a server.
+Production database URL handling and application code are unchanged.
+Two subprocess regression tests exercise the real integration and tester-army entry points with 11 unsafe or missing configurations each.
+Each test requires the configuration diagnostic and a nonzero exit, and asserts zero database connections to its loopback sentinel.
+The passing-after log is `artifacts/e2e-checks/database-target-after.log`.
+
+The existing `postgres-integration` CI job now runs integration and tester-army E2E sequentially, with reports uploaded before cleanup.
+The separate `backend-e2e` job was removed because the currently required checks do not include that new context.
+The package job retains its existing `verify` and `postgres-integration` dependencies.
+This change makes an E2E failure fail the existing required database check instead of relying on a skipped dependent package job.
+No remote branch-protection setting was changed.
+Live execution of the revised CI job remains unverified.
+
+On 2026-10-05, Node 24.21.0 and npm 12.2.0 passed `npm run verify` with all 79 offline tests, lint, strict type checks, build, selftest, and repository policy checks.
+`npm run eval` passed all 22 maintenance evaluations.
+Sequential `npm run test:acceptance` passed all 32 integration tests and all 38 tester-army cases against local synthetic Postgres 18.6.
+The final full E2E run is `01a1096b-a1e0-7ac3-a899-0604d8c050c4`, with reports under `artifacts/e2e/`.
+The logs are `artifacts/e2e-checks/guard-repair-verify.log`, `guard-repair-eval.log`, and `guard-repair-acceptance.log`.
+An additional positive smoke passed one integration case and one E2E case using `postgresql:` with `localhost` against the same dedicated test database.
+Its log is `artifacts/e2e-checks/guard-repair-local-postgresql.log`, and its E2E report is in `artifacts/e2e-checks/local-postgresql/`.
+The full acceptance run used `postgres:` with `127.0.0.1`.
+
+The earlier author report remains archived under `artifacts/e2e-independent/author-run/`.
+The candidate remains medium risk and requires a new independent review after this repair.
+The parent owns issue tracking, candidate commits, source packaging, PR operations, and final handoff.
+No commit, PR, merge, source-package claim, hosted call, or paid simulation was made during this repair.
+The local ElevenLabs credential and hosted-state limitations remain unchanged.
+
+## Independent E2E verification and candidate packaging
+
+On 2026-10-05, a fresh Luna 6 reviewer independently installed and verified the repaired candidate.
+Node 24.21.0 and npm 12.2.0 passed all 79 offline tests, lint, application and E2E type checks, build, selftest, and repository policy checks.
+All 22 maintenance evaluations passed.
+The reviewer created a separate synthetic local Postgres test database and ran the acceptance suites sequentially.
+All 32 integration tests and all 38 tester-army E2E tests passed.
+The authoritative independent run is `01a10973-640d-7680-82c1-1166e3d76276`.
+The report records zero skips, flaky results, run errors, secondary errors, and model tokens.
+All 38 attempt cleanup records are complete, and no backend or runner process remains.
+Independent logs and report copies are under `artifacts/e2e-independent/final/`.
+The earlier repaired author report is archived under `artifacts/e2e-independent/repair-author-run/`.
+
+The independent trail review identified one weak historical evidence pointer.
+The inherited 28-case report was observed during pickup, but its raw report was not retained.
+Use the retained independent 38-case report for the current verification claim.
+Earlier pending decisions remain as history and are superseded by later verification rows.
+Prove It Works required actual HTTP, CLI, database, and runner evidence.
+Sequence Work into Verifiable Units kept each confirmed defect behind failing-before and passing-after checks.
+
+The next step is to commit the reviewed candidate locally and verify its source archive.
+The current `artifacts/e2e/` reports remain available for review.
+Hosted voice, live execution of the revised GitHub workflow, and maintainer approval remain unverified.
+This task has not pushed, opened a PR, merged, provisioned cloud resources, or made paid voice calls.

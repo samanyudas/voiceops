@@ -76,5 +76,6 @@ Never add an agent as a commit co-author automatically.
 Update PROGRESS.md with the branch, verification results, next step, and blockers.
 Commit intentional changes or list the uncommitted diff.
 Remove temporary artifacts with `npm run clean` when they are no longer needed.
+The cleanup command preserves `artifacts/elevenlabs/` because it contains durable cloud-resource checkpoints and operation locks.
 
 Read [agent contributions](docs/AI-CONTRIBUTIONS.md), [releases](docs/maintenance/releases.md), and [issue lifecycle](docs/maintenance/issue-lifecycle.md) for detailed rules.

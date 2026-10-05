@@ -11,7 +11,10 @@ import { seed, seedDemo } from '../../dist/src/db/seed.js';
 const databaseUrl=process.env.TEST_DATABASE_URL;
 if (!databaseUrl) throw new Error('TEST_DATABASE_URL is required. Integration tests never report a skipped success.');
 const database = new URL(databaseUrl);
-if (!database.pathname.endsWith('_test') || !['127.0.0.1','localhost'].includes(database.hostname)) throw new Error('Tests require a dedicated local database whose name ends in _test.');
+if (!['postgres:', 'postgresql:'].includes(database.protocol)
+  || !['127.0.0.1', 'localhost'].includes(database.hostname)
+  || !/^\/[A-Za-z0-9_]+_test$/.test(database.pathname)
+  || database.search !== '' || database.hash !== '') throw new Error('Tests require a dedicated local Postgres database ending in _test, without URL query parameters or fragments.');
 const runtime=ManagedRuntime.make(PgClient.layer({url:Redacted.make(databaseUrl),maxConnections:4}));
 const query = (text,params=[])=>runtime.runPromise(Effect.flatMap(PgClient.PgClient,sql=>sql.unsafe(text,params)));
 const port=Number(process.env.TEST_PORT ?? '3107');
