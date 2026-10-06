@@ -1,5 +1,8 @@
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { requireTestDatabaseUrl } from './test-database-target.ts';
+
+requireTestDatabaseUrl(process.env.TEST_DATABASE_URL);
 
 const runner = new URL('../node_modules/e2e/dist/cli/bin.js', import.meta.url);
 const child = spawn(process.execPath, [fileURLToPath(runner), 'run', ...process.argv.slice(2)], {

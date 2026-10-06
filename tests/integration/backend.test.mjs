@@ -7,14 +7,9 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { Effect, ManagedRuntime, Redacted } from 'effect';
 import { PgClient } from '@effect/sql-pg';
 import { seed, seedDemo } from '../../dist/src/db/seed.js';
+import { requireTestDatabaseUrl } from '../../dist/tools/test-database-target.js';
 
-const databaseUrl=process.env.TEST_DATABASE_URL;
-if (!databaseUrl) throw new Error('TEST_DATABASE_URL is required. Integration tests never report a skipped success.');
-const database = new URL(databaseUrl);
-if (!['postgres:', 'postgresql:'].includes(database.protocol)
-  || !['127.0.0.1', 'localhost'].includes(database.hostname)
-  || !/^\/[A-Za-z0-9_]+_test$/.test(database.pathname)
-  || database.search !== '' || database.hash !== '') throw new Error('Tests require a dedicated local Postgres database ending in _test, without URL query parameters or fragments.');
+const databaseUrl = requireTestDatabaseUrl(process.env.TEST_DATABASE_URL);
 const runtime=ManagedRuntime.make(PgClient.layer({url:Redacted.make(databaseUrl),maxConnections:4}));
 const query = (text,params=[])=>runtime.runPromise(Effect.flatMap(PgClient.PgClient,sql=>sql.unsafe(text,params)));
 const port=Number(process.env.TEST_PORT ?? '3107');
