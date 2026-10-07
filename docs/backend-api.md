@@ -73,6 +73,7 @@ Current views remain separate from receipts.
 | 404 | Unknown asset, missing draft, or missing work order |
 | 409 | Duplicate decision, stale candidate, conflicting replay, transition, or technician mismatch |
 | 410 | Expired draft |
+| 429 | The authenticated role has exhausted its request budget |
 | 503 | Storage failure with an unknown operation outcome |
 
 A 503 does not prove rollback.
@@ -80,3 +81,43 @@ Retry a mutation with the same logical key after a lost response.
 The server retries an entire transaction at most twice for retryable SQL failures.
 Database constraints prevent multiple active jobs for one technician or multiple active technicians for one job.
 Reports and events reject ordinary updates and deletes.
+
+## Request rate limits
+
+Each backend process owns separate operator and technician budgets.
+Each role permits 120 operational requests and 30 writes per 60-second fixed window by default.
+All six operational routes consume the all-request budget.
+POST requests also consume the write budget.
+These defaults are initial protection settings, not measured backend capacity.
+The shared capability credentials make each budget shared by all callers with that role.
+
+Authentication runs before admission, and admission runs before payload decoding or service work.
+Invalid credentials and wrong-role credentials retain their 401 and 403 responses without consuming either budget.
+An admitted request consumes its budget even if decoding or the operation fails.
+A rejected request consumes neither budget and performs no mutation.
+The public `GET /openapi.json` route remains outside these budgets.
+
+Operational responses after admission include `RateLimit-Limit`, `RateLimit-Remaining`, and `RateLimit-Reset`.
+The headers describe the applicable budget with the fewest remaining requests.
+`RateLimit-Reset` is the rounded-up number of seconds until that budget resets, with a minimum of one.
+A 429 response also includes `Retry-After` with the same number of seconds.
+If both budgets reject a write, the response describes the exhausted budget that resets last.
+The error contains `code: "RateLimited"` and `message: "Request rate limit exceeded."`.
+Effect also includes the error discriminator `_tag: "RateLimited"`.
+
+| Environment field | Default | Accepted decimal integers |
+| --- | --- | --- |
+| `RATE_LIMIT_WINDOW_SECONDS` | 60 | 1 through 3600 |
+| `RATE_LIMIT_ALL_PER_WINDOW` | 120 | 1 through 100000 |
+| `RATE_LIMIT_WRITES_PER_WINDOW` | 30 | 1 through 100000 |
+
+The server rejects invalid settings before it starts database access or listens.
+The write budget cannot exceed the all-request budget.
+
+The limiter has exactly four counters and uses a monotonic clock.
+The counter keys are validated roles, with no caller-controlled identity or IP address.
+Admission checks and increments run synchronously, so only one concurrent request can consume a final slot within one process.
+Fixed windows permit a burst across a window boundary.
+Restarting a process resets its budgets, and multiple processes each have their own budgets.
+A deployment that needs a shared limit across replicas requires separate gateway or centralized admission enforcement.
+These budgets do not limit unauthenticated traffic or the public OpenAPI route.

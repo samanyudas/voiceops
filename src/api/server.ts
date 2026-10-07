@@ -2,13 +2,14 @@ import { timingSafeEqual } from "node:crypto";
 import { createServer } from "node:http";
 import { Effect, Layer } from "effect";
 import { HttpApiBuilder } from "effect/http-api";
-import { HttpRouter, HttpServerRequest } from "effect/http";
+import { HttpEffect, HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http";
 import { NodeHttpServer } from "@effect/platform-node";
 import { Api, OperatorAuth, TechnicianAuth } from "./definition.js";
-import { Forbidden, Unauthorized } from "../domain/errors.js";
+import { Forbidden, Unauthorized, RateLimited } from "../domain/errors.js";
 import { IntakeService } from "../services/intake.js";
 import { TechnicianActionService } from "../services/technician-actions.js";
 import { servicesLayer } from "../services/runtime.js";
+import { defaultRateLimits, makeRateLimiter, type CapabilityRole, type RateLimitConfig } from "./rate-limit.js";
 
 function matches(value: string | undefined, expected: string): boolean {
   if (value === undefined) return false;
@@ -16,8 +17,9 @@ function matches(value: string | undefined, expected: string): boolean {
   const b = Buffer.from(expected);
   return a.length === b.length && timingSafeEqual(a,b);
 }
-export function serverLayer(options: { readonly databaseUrl: string; readonly toolKey: string; readonly technicianKey: string; readonly port: number; readonly host?: string }) {
-  const authorize = (role: 'operator' | 'technician') => Effect.gen(function*() {
+export function serverLayer(options: { readonly databaseUrl: string; readonly toolKey: string; readonly technicianKey: string; readonly port: number; readonly host?: string; readonly rateLimits?: RateLimitConfig }) {
+  const limiter = makeRateLimiter(options.rateLimits ?? defaultRateLimits);
+  const authorize = (role: CapabilityRole) => Effect.gen(function*() {
     const request = yield* HttpServerRequest.HttpServerRequest;
     const expected = role === 'operator' ? options.toolKey : options.technicianKey;
     const own = request.headers[role === 'operator' ? 'x-voiceops-tool-key' : 'x-voiceops-tech-key'];
@@ -27,7 +29,22 @@ export function serverLayer(options: { readonly databaseUrl: string; readonly to
     if (matches(other,otherExpected) || matches(own,otherExpected)) return yield* new Forbidden({ code: 'WrongCapability', message: 'This credential cannot perform this class of operations.' });
     return yield* new Unauthorized({ code: 'InvalidCredential', message: 'A valid capability credential is required.' });
   });
-  const auth = Layer.mergeAll(Layer.succeed(OperatorAuth, OperatorAuth.of((next) => authorize('operator').pipe(Effect.andThen(next)))), Layer.succeed(TechnicianAuth, TechnicianAuth.of((next) => authorize('technician').pipe(Effect.andThen(next)))));
+  const admit = (role: CapabilityRole) => authorize(role).pipe(Effect.andThen(Effect.gen(function*() {
+    const request = yield* HttpServerRequest.HttpServerRequest;
+    const decision = limiter.admit(role, request.method);
+    const { limit, remaining, resetAfterSeconds } = decision.snapshot;
+    yield* HttpEffect.appendPreResponseHandler((_request, response) => Effect.succeed(HttpServerResponse.setHeaders(response, {
+      'RateLimit-Limit': String(limit),
+      'RateLimit-Remaining': String(remaining),
+      'RateLimit-Reset': String(resetAfterSeconds),
+      ...(decision.kind === 'limited' ? { 'Retry-After': String(resetAfterSeconds) } : {})
+    })));
+    if (decision.kind === 'limited') return yield* new RateLimited({ code: 'RateLimited', message: 'Request rate limit exceeded.' });
+  })));
+  const auth = Layer.mergeAll(
+    Layer.succeed(OperatorAuth, OperatorAuth.of(next => admit('operator').pipe(Effect.andThen(next)))),
+    Layer.succeed(TechnicianAuth, TechnicianAuth.of(next => admit('technician').pipe(Effect.andThen(next))))
+  );
   const operator = HttpApiBuilder.group(Api,'operator', Effect.fn(function*(handlers) {
     const intake = yield* IntakeService;
     return handlers.handleAll({ context: ({params}) => intake.context(params.assetId), prepare: ({payload}) => intake.prepare(payload), confirm: ({payload}) => intake.confirm(payload) });

@@ -1,10 +1,10 @@
 import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiMiddleware } from "effect/http-api";
 import { Schema } from "effect";
 import { ActionResult, AssetContext, ConfirmInput, ConfirmationResult, PrepareInput, Prepared, State, TechnicianAction, WorkOrderId, WorkOrderView } from "../domain/models.js";
-import { Conflict, ExpiredDraft, Forbidden, InvalidInput, MissingRecord, StorageFailure, Unauthorized } from "../domain/errors.js";
+import { Conflict, ExpiredDraft, Forbidden, InvalidInput, MissingRecord, StorageFailure, Unauthorized, RateLimited } from "../domain/errors.js";
 
-export class OperatorAuth extends HttpApiMiddleware.Service<OperatorAuth>()('voiceops/OperatorAuth', { error: [Unauthorized, Forbidden] }) {}
-export class TechnicianAuth extends HttpApiMiddleware.Service<TechnicianAuth>()('voiceops/TechnicianAuth', { error: [Unauthorized, Forbidden] }) {}
+export class OperatorAuth extends HttpApiMiddleware.Service<OperatorAuth>()('voiceops/OperatorAuth', { error: [Unauthorized, Forbidden, RateLimited] }) {}
+export class TechnicianAuth extends HttpApiMiddleware.Service<TechnicianAuth>()('voiceops/TechnicianAuth', { error: [Unauthorized, Forbidden, RateLimited] }) {}
 const errors = [InvalidInput, MissingRecord, Conflict, ExpiredDraft, StorageFailure];
 export const Api = HttpApi.make('voiceops')
   .add(HttpApiGroup.make('operator')

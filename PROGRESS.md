@@ -181,3 +181,34 @@ The next step is to commit the reviewed candidate locally and verify its source 
 The current `artifacts/e2e/` reports remain available for review.
 Hosted voice, live execution of the revised GitHub workflow, and maintainer approval remain unverified.
 This task has not pushed, opened a PR, merged, provisioned cloud resources, or made paid voice calls.
+
+## Authenticated API rate limits
+
+The candidate branch is `feat/api-rate-limits` in `/private/tmp/voiceops-rate-limits`.
+[Issue 16](https://github.com/samanyudas/voiceops/issues/16) tracks this medium-risk behavior change.
+Each server instance now owns four bounded fixed-window counters for operator and technician all-request and write budgets.
+The default is 120 requests and 30 writes per role per 60 seconds.
+These defaults are initial protection settings, not measured capacity.
+The selected design uses existing authenticated roles and avoids caller-controlled identity maps or database work during admission.
+
+Authentication runs before admission, and admission runs before payload decoding and service work.
+Admitted malformed input and business failures consume budget.
+Rejected requests return 429 with the stable `RateLimited` code, rate metadata, and `Retry-After` without mutation.
+Effect pre-response handlers also attach rate metadata to admitted encoded errors.
+The public OpenAPI path remains outside the operational budgets, and its generated contract lists 429 on all six routes.
+Startup validates three optional environment settings before database access or listening.
+Existing fast acceptance fixtures use explicit high finite quotas to preserve their original behavioral focus.
+
+On 2026-10-08, Node 24.21.0 and npm 12.2.0 passed `npm run verify` with 80 offline tests, lint, strict type checks, build, selftest, and repository policy checks.
+`npm run eval` passed all 22 maintenance evaluations.
+Sequential `npm run test:acceptance` passed 36 integration tests and 38 tester-army E2E tests against isolated synthetic Postgres at port 55439.
+Four added real HTTP cases check exhaustion, recovery, role and write isolation, authentication precedence, admitted error metadata, concurrent admission, unchanged rejected mutations, OpenAPI, and default settings.
+The offline startup test checks 16 invalid configurations and zero connections to a local database sentinel.
+The full E2E run is `01a116ad-d5ad-7285-8798-97b3de17b9ad`, with reports under `artifacts/e2e/`.
+Author gate logs are `/tmp/voiceops-rate-verify.log`, `/tmp/voiceops-rate-eval.log`, and `/tmp/voiceops-rate-acceptance.log`.
+
+Fixed windows allow bursts across boundaries, restarting resets budgets, and each replica receives its own budgets.
+Shared role credentials give callers a shared budget rather than personal quotas.
+Unauthenticated traffic and the public OpenAPI route still need separate perimeter protection if required by deployment.
+Independent review, committed source-package verification, maintainer review, and release remain pending.
+No remote service, hosted voice, paid simulation, push, PR, or merge ran during implementation.
