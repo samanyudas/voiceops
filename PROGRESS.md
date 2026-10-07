@@ -233,3 +233,23 @@ The passing log is `/tmp/voiceops-rate-head-after.log`.
 Its log is `/tmp/voiceops-rate-head-verify.log`.
 The integration suite now contains 38 cases, including six rate-limit cases.
 Final full acceptance, maintenance evaluations, independent repair review, and committed source packaging remain pending.
+
+### Final independent verification
+
+Independent review reproduced the HEAD admission defect through the compiled HTTP server.
+Commit `bbe4141` corrected HEAD classification and added a regression that failed before the correction.
+The final review found no remaining correctness defects or comment suppressions.
+Model the Domain kept admission state in four bounded counters.
+Prove It Works required actual HTTP, Postgres, concurrency, startup, and packaged-checkout evidence.
+
+On Node 24.21.0 and npm 12.2.0, the final sequential acceptance run passed all 38 integration tests and 38 E2E cases.
+The E2E run is `01a116b5-c4b2-7c63-b318-a668cb736f00`.
+All 22 evaluations passed, and the committed source archive installed and passed verification with 80 offline tests in a fresh checkout.
+Logs are `/tmp/voiceops-rate-final-acceptance.log`, `/tmp/voiceops-rate-final-eval.log`, and `/tmp/voiceops-rate-final-package.log`.
+The HEAD before-and-after logs are `/tmp/voiceops-rate-head-before.log` and `/tmp/voiceops-rate-head-after.log`.
+
+The remaining test gaps are staggered window resets and simultaneous exhaustion of both budgets.
+The short recovery test can still fail if the runner stalls across its one-second window.
+No defect was observed in those cases.
+The feature is ready to submit for maintainer review.
+Hosted CI, hosted voice, release, and merge remain unverified.
