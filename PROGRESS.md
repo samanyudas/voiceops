@@ -251,5 +251,6 @@ The HEAD before-and-after logs are `/tmp/voiceops-rate-head-before.log` and `/tm
 The remaining test gaps are staggered window resets and simultaneous exhaustion of both budgets.
 The short recovery test can still fail if the runner stalls across its one-second window.
 No defect was observed in those cases.
-The feature is ready to submit for maintainer review.
-Hosted CI, hosted voice, release, and merge remain unverified.
+The feature is submitted in [PR 17](https://github.com/samanyudas/voiceops/pull/17) for maintainer review.
+Hosted CI was in progress when the PR was checked.
+Hosted voice, release, and merge remain unverified.
