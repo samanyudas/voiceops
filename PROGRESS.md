@@ -212,3 +212,24 @@ Shared role credentials give callers a shared budget rather than personal quotas
 Unauthenticated traffic and the public OpenAPI route still need separate perimeter protection if required by deployment.
 Independent review, committed source-package verification, maintainer review, and release remain pending.
 No remote service, hosted voice, paid simulation, push, PR, or merge ran during implementation.
+
+## HEAD rate-limit repair
+
+Independent review found that Effect also routes HEAD through GET handlers.
+Candidate `82af644` incorrectly charged those reads to the write budget.
+The real HTTP regression failed before the repair because the first HEAD response advertised the write limit rather than the all-request limit.
+The failing log is `/tmp/voiceops-rate-head-before.log`.
+
+GET and HEAD now consume only the all-request budget.
+Other admitted methods continue to consume both applicable budgets.
+The regression proves that HEAD preserves the write slot before exhaustion and remains available after write exhaustion.
+HEAD still consumes the all-request budget and receives 429 when that budget is full.
+The mixed exhaustion, authentication, and OpenAPI test now uses a 60-second window.
+A separate minimal one-second test checks recovery without a long request sequence crossing the window boundary.
+
+All six targeted real HTTP rate-limit cases passed on Node 24.21.0 against the same isolated synthetic Postgres database.
+The passing log is `/tmp/voiceops-rate-head-after.log`.
+`npm run verify` passed lint, strict type checks, build, all 80 offline tests, selftest, and repository policy checks after the repair.
+Its log is `/tmp/voiceops-rate-head-verify.log`.
+The integration suite now contains 38 cases, including six rate-limit cases.
+Final full acceptance, maintenance evaluations, independent repair review, and committed source packaging remain pending.

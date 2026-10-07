@@ -87,7 +87,9 @@ Reports and events reject ordinary updates and deletes.
 Each backend process owns separate operator and technician budgets.
 Each role permits 120 operational requests and 30 writes per 60-second fixed window by default.
 All six operational routes consume the all-request budget.
-POST requests also consume the write budget.
+GET and HEAD requests consume only the all-request budget.
+Every other admitted method also consumes the write budget.
+Effect routes HEAD requests through the existing GET handlers.
 These defaults are initial protection settings, not measured backend capacity.
 The shared capability credentials make each budget shared by all callers with that role.
 

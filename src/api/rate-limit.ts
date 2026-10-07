@@ -25,7 +25,7 @@ export function makeRateLimiter(config: RateLimitConfig) {
     admit(role: CapabilityRole, method: string): Admission {
       const now = performance.now();
       const applicable = [{ counter: counters[role].all, limit: config.allPerWindow }];
-      if (method !== 'GET') applicable.push({ counter: counters[role].write, limit: config.writesPerWindow });
+      if (method !== 'GET' && method !== 'HEAD') applicable.push({ counter: counters[role].write, limit: config.writesPerWindow });
       for (const { counter } of applicable) {
         if (now - counter.startMs >= config.windowMs) {
           counter.startMs = now;

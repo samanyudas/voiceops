@@ -282,8 +282,8 @@ function rateHeaders(response, limit, remaining) {
   if (response.status === 429) assert.equal(response.headers.get('retry-after'), response.headers.get('ratelimit-reset'));
   else assert.equal(response.headers.get('retry-after'), null);
 }
-test('rate limits charge malformed writes, preserve authentication precedence and recover', async () => {
-  await limitedServer({ RATE_LIMIT_WINDOW_SECONDS: '1', RATE_LIMIT_ALL_PER_WINDOW: '3', RATE_LIMIT_WRITES_PER_WINDOW: '1' }, async () => {
+test('rate limits charge malformed writes and preserve authentication precedence', async () => {
+  await limitedServer({ RATE_LIMIT_WINDOW_SECONDS: '60', RATE_LIMIT_ALL_PER_WINDOW: '3', RATE_LIMIT_WRITES_PER_WINDOW: '1' }, async () => {
     const malformed = await rateRequest('/intake/prepare', { method: 'POST', raw: '{' });
     assert.equal(malformed.status, 400); rateHeaders(malformed, 1, 0);
     const blocked = await rateRequest('/intake/confirm', { method: 'POST', raw: '{' });
@@ -300,8 +300,6 @@ test('rate limits charge malformed writes, preserve authentication precedence an
     assert.equal(publicResponse.status, 200); assert.equal(publicResponse.headers.get('ratelimit-limit'), null);
     const contract = await publicResponse.json();
     for (const path of Object.values(contract.paths)) for (const operation of Object.values(path)) assert.ok(operation.responses['429']);
-    await delay(1100);
-    const recovered = await rateRequest('/assets/P-101'); assert.equal(recovered.status, 200); rateHeaders(recovered, 3, 2);
   });
 });
 test('rate admission gives exactly one concurrent request the final slot and isolates role quotas', async () => {
@@ -343,5 +341,32 @@ test('rate defaults apply when optional environment settings are absent', async 
     assert.ok(Number(read.headers.get('ratelimit-reset')) <= 60);
     const write = await rateRequest('/intake/prepare', { method: 'POST', raw: '{}' });
     assert.equal(write.status, 400); rateHeaders(write, 30, 29);
+  });
+});
+test('HEAD reads spend only the all-request budget before and after write exhaustion', async () => {
+  await limitedServer({ RATE_LIMIT_ALL_PER_WINDOW: '4', RATE_LIMIT_WRITES_PER_WINDOW: '1' }, async () => {
+    const firstHead = await rateRequest('/assets/P-101', { method: 'HEAD' });
+    assert.equal(firstHead.status, 200); assert.equal(firstHead.body, null); rateHeaders(firstHead, 4, 3);
+    const write = await rateRequest('/intake/prepare', { method: 'POST', raw: '{' });
+    assert.equal(write.status, 400); rateHeaders(write, 1, 0);
+    assert.equal((await rateRequest('/intake/prepare', { method: 'POST', raw: '{' })).status, 429);
+    const secondHead = await rateRequest('/assets/P-101', { method: 'HEAD' });
+    assert.equal(secondHead.status, 200); assert.equal(secondHead.body, null); rateHeaders(secondHead, 4, 1);
+    const lastRead = await rateRequest('/assets/P-101');
+    assert.equal(lastRead.status, 200); rateHeaders(lastRead, 4, 0);
+    const rejectedHead = await rateRequest('/assets/P-101', { method: 'HEAD' });
+    assert.equal(rejectedHead.status, 429); assert.equal(rejectedHead.body, null); rateHeaders(rejectedHead, 4, 0);
+  });
+});
+
+test('rate admission resumes after a short exhausted window resets', async () => {
+  await limitedServer({ RATE_LIMIT_WINDOW_SECONDS: '1', RATE_LIMIT_ALL_PER_WINDOW: '1', RATE_LIMIT_WRITES_PER_WINDOW: '1' }, async () => {
+    const admitted = await rateRequest('/assets/P-101');
+    assert.equal(admitted.status, 200); rateHeaders(admitted, 1, 0);
+    const rejected = await rateRequest('/assets/P-101');
+    assert.equal(rejected.status, 429); rateHeaders(rejected, 1, 0);
+    await delay(1100);
+    const recovered = await rateRequest('/assets/P-101');
+    assert.equal(recovered.status, 200); rateHeaders(recovered, 1, 0);
   });
 });
