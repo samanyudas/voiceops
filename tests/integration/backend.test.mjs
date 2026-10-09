@@ -23,9 +23,9 @@ const toolKey='synthetic-operator-test-key';
 const technicianKey='synthetic-technician-test-key';
 let server;
 let logs='';
-async function start() {
+async function start(rateLimits = {}) {
   logs='';
-  server=spawn(process.execPath,['dist/tools/server.js'],{env:{...process.env,DATABASE_URL:databaseUrl,TOOL_API_KEY:toolKey,TECHNICIAN_API_KEY:technicianKey,PORT:String(port)}});
+  server=spawn(process.execPath,['dist/tools/server.js'],{env:{...process.env,RATE_LIMIT_WINDOW_SECONDS:'60',RATE_LIMIT_ALL_PER_WINDOW:'100000',RATE_LIMIT_WRITES_PER_WINDOW:'100000',DATABASE_URL:databaseUrl,TOOL_API_KEY:toolKey,TECHNICIAN_API_KEY:technicianKey,PORT:String(port),...rateLimits}});
   server.stdout.on('data', chunk=> {logs+=chunk.toString();}); server.stderr.on('data',chunk=>{logs+=chunk.toString();});
   for (let i=0;i<100;i++) {
     if (server.exitCode!==null) throw new Error(`Server exited. ${logs}`);
@@ -258,4 +258,115 @@ test('priority rank cannot be null or inconsistent with the reported priority',a
   await assert.rejects(query('UPDATE work_orders SET priority_rank=3 WHERE id=$1',[order.id]),error=>error.reason._tag==='ConstraintError');
   const held=(await create({facts:{equipment:'unknown'}})).workOrder;
   await assert.rejects(query('UPDATE work_orders SET priority_rank=0 WHERE id=$1',[held.id]),error=>error.reason._tag==='ConstraintError');
+});
+
+async function limitedServer(settings, check) {
+  await stop();
+  try { await start(settings); await check(); } finally { await stop(); await start(); }
+}
+async function rateRequest(path, { method = 'GET', role = 'operator', raw, credential, forwarded } = {}) {
+  const response = await fetch(`${base}${path}`, {
+    method,
+    headers: { 'content-type': 'application/json',
+      [role === 'operator' ? 'x-voiceops-tool-key' : 'x-voiceops-tech-key']: credential ?? (role === 'operator' ? toolKey : technicianKey),
+      ...(forwarded ? { 'x-forwarded-for': forwarded } : {}) },
+    ...(raw === undefined ? {} : { body: raw }), signal: AbortSignal.timeout(5000)
+  });
+  const text = await response.text();
+  return { status: response.status, headers: response.headers, body: text ? JSON.parse(text) : null };
+}
+function rateHeaders(response, limit, remaining) {
+  assert.equal(response.headers.get('ratelimit-limit'), String(limit));
+  assert.equal(response.headers.get('ratelimit-remaining'), String(remaining));
+  assert.match(response.headers.get('ratelimit-reset'), /^[1-9][0-9]*$/);
+  if (response.status === 429) assert.equal(response.headers.get('retry-after'), response.headers.get('ratelimit-reset'));
+  else assert.equal(response.headers.get('retry-after'), null);
+}
+test('rate limits charge malformed writes and preserve authentication precedence', async () => {
+  await limitedServer({ RATE_LIMIT_WINDOW_SECONDS: '60', RATE_LIMIT_ALL_PER_WINDOW: '3', RATE_LIMIT_WRITES_PER_WINDOW: '1' }, async () => {
+    const malformed = await rateRequest('/intake/prepare', { method: 'POST', raw: '{' });
+    assert.equal(malformed.status, 400); rateHeaders(malformed, 1, 0);
+    const blocked = await rateRequest('/intake/confirm', { method: 'POST', raw: '{' });
+    assert.equal(blocked.status, 429); rateHeaders(blocked, 1, 0);
+    assert.equal(blocked.body.code, 'RateLimited'); assert.equal(blocked.body.message, 'Request rate limit exceeded.');
+    assert.equal((await rateRequest('/intake/prepare', { method: 'POST', raw: '{', credential: 'invalid' })).status, 401);
+    assert.equal((await rateRequest('/intake/prepare', { method: 'POST', raw: '{', credential: technicianKey })).status, 403);
+    const read = await rateRequest('/assets/P-101'); assert.equal(read.status, 200); rateHeaders(read, 3, 1);
+    assert.equal((await rateRequest('/assets/P-101')).status, 200);
+    const rejected = await rateRequest('/assets/P-101', { forwarded: '192.0.2.1' });
+    assert.equal(rejected.status, 429); rateHeaders(rejected, 3, 0);
+    assert.equal((await rateRequest('/state', { role: 'technician' })).status, 200);
+    const publicResponse = await fetch(`${base}/openapi.json`);
+    assert.equal(publicResponse.status, 200); assert.equal(publicResponse.headers.get('ratelimit-limit'), null);
+    const contract = await publicResponse.json();
+    for (const path of Object.values(contract.paths)) for (const operation of Object.values(path)) assert.ok(operation.responses['429']);
+  });
+});
+test('rate admission gives exactly one concurrent request the final slot and isolates role quotas', async () => {
+  await limitedServer({ RATE_LIMIT_ALL_PER_WINDOW: '2', RATE_LIMIT_WRITES_PER_WINDOW: '1' }, async () => {
+    assert.equal((await rateRequest('/assets/P-101', { credential: 'invalid' })).status, 401);
+    assert.equal((await rateRequest('/assets/P-101', { credential: technicianKey })).status, 403);
+    assert.equal((await rateRequest('/assets/P-101')).status, 200);
+    const raced = await Promise.all(Array.from({ length: 8 }, (_, index) => rateRequest('/assets/P-101', { forwarded: `192.0.2.${index}` })));
+    assert.equal(raced.filter(result => result.status === 200).length, 1);
+    assert.equal(raced.filter(result => result.status === 429).length, 7);
+    for (const result of raced) rateHeaders(result, 2, 0);
+    const failure = await rateRequest('/work-orders/missing', { role: 'technician' });
+    assert.equal(failure.status, 404); rateHeaders(failure, 2, 1);
+    assert.equal((await rateRequest('/state', { role: 'technician' })).status, 200);
+    assert.equal((await rateRequest('/state', { role: 'technician' })).status, 429);
+  });
+});
+test('rate rejection prevents confirmation and technician mutation without database changes', async () => {
+  const prepared = await prepare();
+  const order = (await create({ category: 'electrical-fault' })).workOrder;
+  const beforeState = await state();
+  const beforeDrafts = await query('SELECT * FROM drafts ORDER BY id');
+  await limitedServer({ RATE_LIMIT_ALL_PER_WINDOW: '10', RATE_LIMIT_WRITES_PER_WINDOW: '1' }, async () => {
+    assert.equal((await rateRequest('/intake/prepare', { method: 'POST', raw: '{}' })).status, 400);
+    assert.equal((await rateRequest('/technician/actions', { role: 'technician', method: 'POST', raw: '{}' })).status, 400);
+    const confirmation = await rateRequest('/intake/confirm', { method: 'POST', raw: JSON.stringify({ draftId: prepared.draft.id, decision: { kind: 'new-occurrence' } }) });
+    assert.equal(confirmation.status, 429); rateHeaders(confirmation, 1, 0);
+    const action = await rateRequest('/technician/actions', { role: 'technician', method: 'POST', raw: JSON.stringify({ workOrderId: order.id, technicianId: order.allocation.technicianId, action: 'acknowledge', requestId: 'rate-blocked-action' }) });
+    assert.equal(action.status, 429); rateHeaders(action, 1, 0);
+    assert.deepEqual(await state(), beforeState);
+    assert.deepEqual(await query('SELECT * FROM drafts ORDER BY id'), beforeDrafts);
+    assert.deepEqual(await query('SELECT * FROM action_receipts'), []);
+  });
+});
+test('rate defaults apply when optional environment settings are absent', async () => {
+  await limitedServer({ RATE_LIMIT_WINDOW_SECONDS: undefined, RATE_LIMIT_ALL_PER_WINDOW: undefined, RATE_LIMIT_WRITES_PER_WINDOW: undefined }, async () => {
+    const read = await rateRequest('/assets/P-101');
+    assert.equal(read.status, 200); rateHeaders(read, 120, 119);
+    assert.ok(Number(read.headers.get('ratelimit-reset')) <= 60);
+    const write = await rateRequest('/intake/prepare', { method: 'POST', raw: '{}' });
+    assert.equal(write.status, 400); rateHeaders(write, 30, 29);
+  });
+});
+test('HEAD reads spend only the all-request budget before and after write exhaustion', async () => {
+  await limitedServer({ RATE_LIMIT_ALL_PER_WINDOW: '4', RATE_LIMIT_WRITES_PER_WINDOW: '1' }, async () => {
+    const firstHead = await rateRequest('/assets/P-101', { method: 'HEAD' });
+    assert.equal(firstHead.status, 200); assert.equal(firstHead.body, null); rateHeaders(firstHead, 4, 3);
+    const write = await rateRequest('/intake/prepare', { method: 'POST', raw: '{' });
+    assert.equal(write.status, 400); rateHeaders(write, 1, 0);
+    assert.equal((await rateRequest('/intake/prepare', { method: 'POST', raw: '{' })).status, 429);
+    const secondHead = await rateRequest('/assets/P-101', { method: 'HEAD' });
+    assert.equal(secondHead.status, 200); assert.equal(secondHead.body, null); rateHeaders(secondHead, 4, 1);
+    const lastRead = await rateRequest('/assets/P-101');
+    assert.equal(lastRead.status, 200); rateHeaders(lastRead, 4, 0);
+    const rejectedHead = await rateRequest('/assets/P-101', { method: 'HEAD' });
+    assert.equal(rejectedHead.status, 429); assert.equal(rejectedHead.body, null); rateHeaders(rejectedHead, 4, 0);
+  });
+});
+
+test('rate admission resumes after a short exhausted window resets', async () => {
+  await limitedServer({ RATE_LIMIT_WINDOW_SECONDS: '1', RATE_LIMIT_ALL_PER_WINDOW: '1', RATE_LIMIT_WRITES_PER_WINDOW: '1' }, async () => {
+    const admitted = await rateRequest('/assets/P-101');
+    assert.equal(admitted.status, 200); rateHeaders(admitted, 1, 0);
+    const rejected = await rateRequest('/assets/P-101');
+    assert.equal(rejected.status, 429); rateHeaders(rejected, 1, 0);
+    await delay(1100);
+    const recovered = await rateRequest('/assets/P-101');
+    assert.equal(recovered.status, 200); rateHeaders(recovered, 1, 0);
+  });
 });

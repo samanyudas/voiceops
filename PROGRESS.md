@@ -181,3 +181,76 @@ The next step is to commit the reviewed candidate locally and verify its source 
 The current `artifacts/e2e/` reports remain available for review.
 Hosted voice, live execution of the revised GitHub workflow, and maintainer approval remain unverified.
 This task has not pushed, opened a PR, merged, provisioned cloud resources, or made paid voice calls.
+
+## Authenticated API rate limits
+
+The candidate branch is `feat/api-rate-limits` in `/private/tmp/voiceops-rate-limits`.
+[Issue 16](https://github.com/samanyudas/voiceops/issues/16) tracks this medium-risk behavior change.
+Each server instance now owns four bounded fixed-window counters for operator and technician all-request and write budgets.
+The default is 120 requests and 30 writes per role per 60 seconds.
+These defaults are initial protection settings, not measured capacity.
+The selected design uses existing authenticated roles and avoids caller-controlled identity maps or database work during admission.
+
+Authentication runs before admission, and admission runs before payload decoding and service work.
+Admitted malformed input and business failures consume budget.
+Rejected requests return 429 with the stable `RateLimited` code, rate metadata, and `Retry-After` without mutation.
+Effect pre-response handlers also attach rate metadata to admitted encoded errors.
+The public OpenAPI path remains outside the operational budgets, and its generated contract lists 429 on all six routes.
+Startup validates three optional environment settings before database access or listening.
+Existing fast acceptance fixtures use explicit high finite quotas to preserve their original behavioral focus.
+
+On 2026-10-08, Node 24.21.0 and npm 12.2.0 passed `npm run verify` with 80 offline tests, lint, strict type checks, build, selftest, and repository policy checks.
+`npm run eval` passed all 22 maintenance evaluations.
+Sequential `npm run test:acceptance` passed 36 integration tests and 38 tester-army E2E tests against isolated synthetic Postgres at port 55439.
+Four added real HTTP cases check exhaustion, recovery, role and write isolation, authentication precedence, admitted error metadata, concurrent admission, unchanged rejected mutations, OpenAPI, and default settings.
+The offline startup test checks 16 invalid configurations and zero connections to a local database sentinel.
+The full E2E run is `01a116ad-d5ad-7285-8798-97b3de17b9ad`, with reports under `artifacts/e2e/`.
+Author gate logs are `/tmp/voiceops-rate-verify.log`, `/tmp/voiceops-rate-eval.log`, and `/tmp/voiceops-rate-acceptance.log`.
+
+Fixed windows allow bursts across boundaries, restarting resets budgets, and each replica receives its own budgets.
+Shared role credentials give callers a shared budget rather than personal quotas.
+Unauthenticated traffic and the public OpenAPI route still need separate perimeter protection if required by deployment.
+Independent review, committed source-package verification, maintainer review, and release remain pending.
+No remote service, hosted voice, paid simulation, push, PR, or merge ran during implementation.
+
+## HEAD rate-limit repair
+
+Independent review found that Effect also routes HEAD through GET handlers.
+Candidate `82af644` incorrectly charged those reads to the write budget.
+The real HTTP regression failed before the repair because the first HEAD response advertised the write limit rather than the all-request limit.
+The failing log is `/tmp/voiceops-rate-head-before.log`.
+
+GET and HEAD now consume only the all-request budget.
+Other admitted methods continue to consume both applicable budgets.
+The regression proves that HEAD preserves the write slot before exhaustion and remains available after write exhaustion.
+HEAD still consumes the all-request budget and receives 429 when that budget is full.
+The mixed exhaustion, authentication, and OpenAPI test now uses a 60-second window.
+A separate minimal one-second test checks recovery without a long request sequence crossing the window boundary.
+
+All six targeted real HTTP rate-limit cases passed on Node 24.21.0 against the same isolated synthetic Postgres database.
+The passing log is `/tmp/voiceops-rate-head-after.log`.
+`npm run verify` passed lint, strict type checks, build, all 80 offline tests, selftest, and repository policy checks after the repair.
+Its log is `/tmp/voiceops-rate-head-verify.log`.
+The integration suite now contains 38 cases, including six rate-limit cases.
+Final full acceptance, maintenance evaluations, independent repair review, and committed source packaging remain pending.
+
+### Final independent verification
+
+Independent review reproduced the HEAD admission defect through the compiled HTTP server.
+Commit `bbe4141` corrected HEAD classification and added a regression that failed before the correction.
+The final review found no remaining correctness defects or comment suppressions.
+Model the Domain kept admission state in four bounded counters.
+Prove It Works required actual HTTP, Postgres, concurrency, startup, and packaged-checkout evidence.
+
+On Node 24.21.0 and npm 12.2.0, the final sequential acceptance run passed all 38 integration tests and 38 E2E cases.
+The E2E run is `01a116b5-c4b2-7c63-b318-a668cb736f00`.
+All 22 evaluations passed, and the committed source archive installed and passed verification with 80 offline tests in a fresh checkout.
+Logs are `/tmp/voiceops-rate-final-acceptance.log`, `/tmp/voiceops-rate-final-eval.log`, and `/tmp/voiceops-rate-final-package.log`.
+The HEAD before-and-after logs are `/tmp/voiceops-rate-head-before.log` and `/tmp/voiceops-rate-head-after.log`.
+
+The remaining test gaps are staggered window resets and simultaneous exhaustion of both budgets.
+The short recovery test can still fail if the runner stalls across its one-second window.
+No defect was observed in those cases.
+The feature is submitted in [PR 17](https://github.com/samanyudas/voiceops/pull/17) for maintainer review.
+Hosted CI was in progress when the PR was checked.
+Hosted voice, release, and merge remain unverified.

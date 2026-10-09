@@ -7,5 +7,6 @@ export class ExpiredDraft extends Schema.TaggedError<ExpiredDraft>()("ExpiredDra
 export class StorageFailure extends Schema.TaggedError<StorageFailure>()("StorageFailure", fields, { httpApiStatus: 503 }) {}
 export class Unauthorized extends Schema.TaggedError<Unauthorized>()("Unauthorized", fields, { httpApiStatus: 401 }) {}
 export class Forbidden extends Schema.TaggedError<Forbidden>()("Forbidden", fields, { httpApiStatus: 403 }) {}
+export class RateLimited extends Schema.TaggedError<RateLimited>()("RateLimited", fields, { httpApiStatus: 429 }) {}
 export type Failure = InvalidInput | MissingRecord | Conflict | ExpiredDraft | StorageFailure;
 export const conflict = (code: string, message: string, candidates: readonly string[] = []) => new Conflict({ code, message, candidates });
