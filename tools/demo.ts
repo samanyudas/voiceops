@@ -1,7 +1,7 @@
-import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { readFileSync } from 'node:fs';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 
 // Local demo server. It serves the demo page, holds both backend credentials,
 // and records every forwarded backend call so the page can show real traffic.
@@ -65,18 +65,21 @@ function send(response: ServerResponse, status: number, body: unknown): void {
   response.end(JSON.stringify(body));
 }
 
-// Forward one allowlisted call. The UI path adds the server-held credential.
-// The relay path passes the caller's own operator credential through unchanged.
+function sameKey(supplied: unknown, expected: string): boolean {
+  if (typeof supplied !== 'string') return false;
+  const digest = (value: string) => createHash('sha256').update(value).digest();
+  return timingSafeEqual(digest(supplied), digest(expected));
+}
+
+// Forward one allowlisted call with the credential for its route. The relay
+// first requires the caller to present the operator credential itself.
 async function forward(request: IncomingMessage, response: ServerResponse, path: string, source: Trace['source']): Promise<void> {
   const method = request.method ?? 'GET';
   const route = routes.find(candidate => candidate.method === method && candidate.pattern.test(path));
   if (!route || (source === 'voice-agent' && route.role !== 'operator')) return send(response, 404, { error: 'Unknown demo route.' });
+  if (source === 'voice-agent' && !sameKey(request.headers['x-voiceops-tool-key'], toolKey ?? '')) return send(response, 401, { error: 'The relay requires the operator credential.' });
   const headers: Record<string, string> = { 'content-type': 'application/json' };
-  if (source === 'ui') headers[route.role === 'operator' ? 'x-voiceops-tool-key' : 'x-voiceops-tech-key'] = route.role === 'operator' ? toolKey ?? '' : technicianKey ?? '';
-  else {
-    const supplied = request.headers['x-voiceops-tool-key'];
-    if (typeof supplied === 'string') headers['x-voiceops-tool-key'] = supplied;
-  }
+  headers[route.role === 'operator' ? 'x-voiceops-tool-key' : 'x-voiceops-tech-key'] = route.role === 'operator' ? toolKey ?? '' : technicianKey ?? '';
   const body = method === 'POST' ? await readBody(request) : undefined;
   const started = performance.now();
   try {
@@ -110,22 +113,30 @@ async function signedUrl(response: ServerResponse): Promise<void> {
 const assets: Readonly<Record<string, string>> = { '/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css' };
 const types: Readonly<Record<string, string>> = { html: 'text/html; charset=utf-8', js: 'text/javascript; charset=utf-8', css: 'text/css; charset=utf-8' };
 
-function boundPort(): number {
-  const address: AddressInfo | string | null = ui.address();
-  return typeof address === 'object' && address !== null ? address.port : port;
+function boundPort(server: Server, fallback: number): number {
+  const address: AddressInfo | string | null = server.address();
+  return typeof address === 'object' && address !== null ? address.port : fallback;
+}
+
+function pathOf(request: IncomingMessage): string | null {
+  try { return new URL(request.url ?? '/', 'http://localhost').pathname; } catch { return null; }
 }
 
 // The server holds both credentials, so it serves only its own page. Checking
-// Host blocks DNS rebinding, and checking Origin blocks cross-site writes.
-function ownOrigin(request: IncomingMessage): boolean {
-  const hosts = [`127.0.0.1:${boundPort()}`, `localhost:${boundPort()}`];
+// Host blocks DNS rebinding, Origin blocks cross-site writes, and
+// Sec-Fetch-Site blocks cross-site reads that would spend the credentials.
+function ownOrigin(request: IncomingMessage, path: string): boolean {
+  const hosts = [`127.0.0.1:${boundPort(ui, port)}`, `localhost:${boundPort(ui, port)}`];
   if (!hosts.includes(request.headers.host ?? '')) return false;
+  const site = request.headers['sec-fetch-site'];
+  if (path.startsWith('/demo/') && site !== undefined && site !== 'same-origin' && site !== 'none') return false;
   return request.method === 'GET' || hosts.some(host => request.headers.origin === `http://${host}`);
 }
 
 const ui = createServer((request, response) => {
-  if (!ownOrigin(request)) return send(response, 403, { error: 'The demo server accepts only requests from its own page.' });
-  const path = new URL(request.url ?? '/', 'http://localhost').pathname;
+  const path = pathOf(request);
+  if (path === null) return send(response, 400, { error: 'Invalid request.' });
+  if (!ownOrigin(request, path)) return send(response, 403, { error: 'The demo server accepts only requests from its own page.' });
   const asset = assets[path];
   if (request.method === 'GET' && asset) {
     const text = readFileSync(new URL(`../../demo/${asset}`, import.meta.url));
@@ -144,12 +155,13 @@ const ui = createServer((request, response) => {
   if (path.startsWith('/demo/api/')) return void forward(request, response, path.slice('/demo/api'.length), 'ui').catch(() => send(response, 400, { error: 'Invalid request.' }));
   send(response, 404, { error: 'Not found.' });
 });
-ui.listen(port, '127.0.0.1', () => process.stdout.write(`Demo UI on http://127.0.0.1:${boundPort()} forwarding to ${backend}\n`));
+ui.listen(port, '127.0.0.1', () => process.stdout.write(`Demo UI on http://127.0.0.1:${boundPort(ui, port)} forwarding to ${backend}\n`));
 
 if (relayPort !== null) {
   const relay = createServer((request, response) => {
-    const path = new URL(request.url ?? '/', 'http://localhost').pathname;
+    const path = pathOf(request);
+    if (path === null) return send(response, 400, { error: 'Invalid request.' });
     void forward(request, response, path, 'voice-agent').catch(() => send(response, 400, { error: 'Invalid request.' }));
   });
-  relay.listen(relayPort, '127.0.0.1', () => process.stdout.write(`Voice tool relay on http://127.0.0.1:${relayPort}. Point the tunnel here.\n`));
+  relay.listen(relayPort, '127.0.0.1', () => process.stdout.write(`Voice tool relay on http://127.0.0.1:${boundPort(relay, relayPort)}. Point the tunnel here.\n`));
 }

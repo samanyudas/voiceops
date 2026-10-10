@@ -114,7 +114,7 @@ function decideCard(prepared, call) {
   const a = prepared.draft.assessment;
   const eligible = a.kind === 'eligible';
   return {
-    title: eligible ? `Rules set the priority to ${a.priority}` : 'Rules hold it for manual review',
+    title: eligible ? `Rules set the priority to ${esc(a.priority)}` : 'Rules hold it for manual review',
     body: `<p>${eligible ? `Fixed rules, not an AI guess, decide the priority from the reported facts. The job needs a <b>${esc(a.requiredSkill)}</b> technician.` : 'Some facts are unknown, so the rules refuse to guess a priority.'}</p>
       <ul class="reasons">${a.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>`,
     out: [['priority', eligible ? a.priority : a.knownPriority ?? 'unknown'], ['skill', eligible ? a.requiredSkill : 'n/a'], ['next', prepared.kind], ['draft expires', new Date(prepared.draft.expiresAt).toLocaleTimeString()]],
@@ -297,6 +297,7 @@ $('next').addEventListener('click', () => {
 // ---------- Live voice mode ----------
 
 let live = null;
+let connecting = false;
 let liveSince = Date.now();
 let livePrepared = null;
 const transcript = [];
@@ -310,7 +311,10 @@ function renderCall() {
 }
 
 // Tool calls made by the hosted agent reach the backend through the demo
-// server's relay, which reports them here.
+// server's relay, which reports them here. Calls run in order so their
+// technician writes never interleave.
+let agentCalls = Promise.resolve();
+
 async function onAgentCall(trace) {
   if (mode !== 'live' || Date.parse(trace.at) < liveSince) return;
   const call = { ...trace };
@@ -318,7 +322,7 @@ async function onAgentCall(trace) {
     if (trace.status >= 400) throw new CallError(`The agent's ${trace.method} ${trace.path} returned HTTP ${trace.status}: ${JSON.stringify(trace.response)}`, call);
     if (trace.path.startsWith('/assets/')) setStep(1, 'done', understandCard(trace.response, call));
     else if (trace.path === '/intake/prepare') { livePrepared = trace.response; setStep(2, 'done', decideCard(trace.response, call)); }
-    else if (trace.path === '/intake/confirm' && livePrepared) {
+    else if (trace.path === '/intake/confirm' && livePrepared?.draft.id === trace.request?.draftId) {
       setStep(3, 'done', confirmCard(livePrepared, trace.response, trace.request.decision, call));
       const a = livePrepared.draft.assessment;
       await dispatchAndResolve(trace.response, a.kind === 'eligible' ? a.requiredSkill : 'none', call, livePrepared.draft.duplicateCandidates.map(c => c.id));
@@ -441,11 +445,13 @@ function stopCall(error) {
 }
 
 $('call').addEventListener('click', () => {
+  if (connecting) return;
   if (live) { stopCall(); return; }
+  connecting = true;
   $('call').textContent = 'End call';
   $('call').classList.add('stop');
   $('call-state').textContent = 'Connecting';
-  startCall().catch(error => stopCall(error.message));
+  startCall().catch(error => stopCall(error.message)).finally(() => { connecting = false; });
 });
 
 // ---------- modes, status, and technical details ----------
@@ -469,13 +475,17 @@ $('details-toggle').addEventListener('click', () => {
   $('details-toggle').textContent = $('details').hidden ? 'Show technical details' : 'Hide technical details';
 });
 
+// The stream replays recent traces when it reconnects, so each trace is handled once.
+const seenTraces = new Set();
 const events = new EventSource('/demo/events');
 events.onmessage = ({ data }) => {
   const trace = JSON.parse(data);
+  if (seenTraces.has(trace.id)) return;
+  seenTraces.add(trace.id);
   const item = document.createElement('li');
   item.innerHTML = `<details><summary><span class="tag ${trace.status < 400 ? 'real' : 'err'}">${trace.status}</span><b>${esc(trace.method)} ${esc(trace.path)}</b><span>${trace.ms} ms</span><span>${trace.source === 'voice-agent' ? 'voice agent' : 'demo page'}</span><span>${new Date(trace.at).toLocaleTimeString()}</span></summary><pre>${esc(JSON.stringify({ request: trace.request, response: trace.response }, null, 2))}</pre></details>`;
   $('traces').prepend(item);
-  if (trace.source === 'voice-agent') void onAgentCall(trace);
+  if (trace.source === 'voice-agent') agentCalls = agentCalls.then(() => onAgentCall(trace));
 };
 
 async function checkStatus() {

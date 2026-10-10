@@ -355,3 +355,17 @@ Two defects were found and then fixed in the same session.
 
 The demo server now reports its bound port, so `DEMO_PORT=0` works for the test.
 The flaky `server-config` test remains open for a separate branch.
+
+### Review fixes
+
+On 2026-10-10, an independent review of `9e1c99b` requested changes, and this session fixed the confirmed findings.
+
+- A malformed request line such as `GET //[` crashed the demo server, taking down both ports. Reproduced on the relay port with exit code 1. Both handlers now return 400, and the test checks that the server is still running afterwards.
+- Live mode repeated technician writes after the event stream reconnected. Reproduced in a browser through a proxy that dropped the stream: after the reconnect, the old page replayed a confirm and resolved Tech-01's unrelated job. The page now handles each trace once, runs agent calls in order, and accepts a confirm only for the draft it prepared. The same run with the fixed page left Tech-01's job IN_PROGRESS, and a call made after the reconnect still reached the page.
+- The relay now rejects a call without the operator credential with 401 before forwarding it.
+- `/demo/` requests whose `Sec-Fetch-Site` is `cross-site` or `same-site` are rejected.
+- `tests/demo-server.test.mjs` now covers other localhost ports, lookalike origins, other methods, the relay, unlisted routes, and malformed URLs. All five guard mutations from the review now fail the test.
+- The priority in the Decide card is escaped. A second Start call click while connecting no longer starts a second session; a double click sent one signed URL request.
+- The guide now states that Live mode may resolve an unrelated seeded job to free a technician.
+
+Not changed: the audio downsampling, Safari's suspended audio, and the microphone tap. They remain unverified without ElevenLabs credentials.

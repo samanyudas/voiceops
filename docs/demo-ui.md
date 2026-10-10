@@ -50,10 +50,13 @@ DEMO_TOOL_RELAY_PORT=3001
 
 The demo server requests a short-lived signed conversation URL, so the browser never receives the API key.
 The tool relay port forwards only the operator routes to the backend.
-It passes the agent's own operator credential through and never adds a credential.
+It forwards a call only when the caller presents the operator credential, so someone who finds the tunnel address cannot use it.
 Point the HTTPS tunnel at the relay port instead of the backend port.
 The page then lights each step when the agent's tool call reaches the backend.
 After confirmation, the page runs the technician steps with real technician requests.
+If the new job is queued, the page frees a technician by resolving that technician's current job.
+That job can be unrelated to the call, so run Live voice against seeded demo data only.
+The page handles each agent call once, even after its event stream reconnects.
 
 The browser allows microphone access only on `localhost` or HTTPS.
 Each live call uses ElevenLabs credits.
