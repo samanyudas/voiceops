@@ -7,16 +7,9 @@ import { Effect, ManagedRuntime, Redacted, Schema } from 'effect';
 import { PgClient } from '@effect/sql-pg';
 import { expect } from 'e2e';
 import { ActionResult, ConfirmationResult, Prepared, State, type Action, type Facts, type PrepareInput, type WorkOrderView } from '../../src/domain/models.js';
+import { requireTestDatabaseUrl } from '../../tools/test-database-target.js';
 
-const databaseUrl = process.env.TEST_DATABASE_URL;
-if (!databaseUrl) throw new Error('TEST_DATABASE_URL is required. E2E tests never skip a missing database.');
-const database = new URL(databaseUrl);
-if (!['postgres:', 'postgresql:'].includes(database.protocol)
-  || !['127.0.0.1', 'localhost'].includes(database.hostname)
-  || !/^\/[A-Za-z0-9_]+_test$/.test(database.pathname)
-  || database.search !== '' || database.hash !== '') {
-  throw new Error('E2E requires a dedicated local Postgres database ending in _test, without URL query parameters or fragments.');
-}
+const databaseUrl = requireTestDatabaseUrl(process.env.TEST_DATABASE_URL);
 const makeRuntime = () => ManagedRuntime.make(PgClient.layer({ url: Redacted.make(databaseUrl), maxConnections: 4, connectTimeout: '3 seconds', startupParameters: { statement_timeout: '10000' } }));
 let runtime: ReturnType<typeof makeRuntime> | undefined;
 export const query = (text: string, params: readonly unknown[] = []) => {

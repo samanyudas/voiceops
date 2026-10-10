@@ -182,6 +182,45 @@ The current `artifacts/e2e/` reports remain available for review.
 Hosted voice, live execution of the revised GitHub workflow, and maintainer approval remain unverified.
 This task has not pushed, opened a PR, merged, provisioned cloud resources, or made paid voice calls.
 
+## Issue 13 test database preflight
+
+The branch is `fix/13-test-database-preflight`.
+Current main at `7035bc0` already contains PR 14's query override rejection.
+This follow-up completes validation before E2E runner startup and removes duplicated test database rules.
+It supersedes the earlier unpushed candidate handoff for issue 13.
+Production database configuration remains unchanged.
+
+The installed Effect Postgres driver parses the URL authority and then replaces the host, port, and database from query parameters.
+A controlled reproduction confirmed one connection to an ephemeral loopback sentinel after the old guard approved a different target.
+No remote or ordinary database was contacted.
+On current main, the new regressions failed because E2E started before validation and both guards accepted a bare query delimiter.
+An additional malformed-URL probe showed that Node's original error printed the synthetic password.
+The failing logs are `artifacts/issue-13/regression-before.log` and `artifacts/issue-13/malformed-before.log`.
+
+One pure typed validator now checks the E2E wrapper and both database suites.
+It returns valid URLs unchanged and emits fixed errors for invalid or missing configuration.
+It rejects query and fragment delimiters, including empty ones.
+The wrapper checks configuration even when no runner is installed.
+The regression commit precedes the implementation commit.
+
+On 2026-10-06, Node 24.21.0 and npm 12.2.0 passed clean installation, `npm run verify` with all 80 offline tests, and all 22 evaluations.
+Both real entry-point regressions rejected 15 unsafe or missing configurations each with zero sentinel connections.
+Sequential acceptance passed all 32 integration tests and all 38 tester-army E2E tests against a separate local Postgres 18.6 cluster and `voiceops_issue13_test` database.
+The E2E run is `01a10e9c-3374-7acd-9bfa-0216eee62f86`.
+The logs are under `artifacts/issue-13/`, and the full E2E reports are under `artifacts/e2e/`.
+An additional integration case and E2E case passed with `postgresql:`, `localhost`, and encoded credential characters.
+The dedicated test cluster stopped after verification.
+
+An independent GPT-6 Sol reviewer found no actionable issues and repeated the build and all three guard regressions successfully.
+The reviewer inspected the failing and passing logs, full E2E report, source-package log, and local decision trail.
+The attempted Claude review returned no verdict because of repeated API errors, so model-family diversity was reduced.
+The committed implementation archive installed cleanly and passed all 80 offline tests and repository checks.
+
+The risk class is medium because the change affects test command validation and diagnostic output.
+Live PR CI remains pending.
+Maintainer review and release tracking opt-in remain required before merge.
+No merge, release, or hosted voice verification is claimed.
+
 ## Authenticated API rate limits
 
 The candidate branch is `feat/api-rate-limits` in `/private/tmp/voiceops-rate-limits`.
@@ -254,3 +293,22 @@ No defect was observed in those cases.
 The feature is submitted in [PR 17](https://github.com/samanyudas/voiceops/pull/17) for maintainer review.
 Hosted CI was in progress when the PR was checked.
 Hosted voice, release, and merge remain unverified.
+
+## PR 15 conflict resolution
+
+On 2026-10-10, PR 15 incorporated main at `57d084c` on the local `resolve/pr15-conflicts` branch.
+The only conflict was in this file, where both branches appended progress records.
+Both records are preserved exactly, and the test code merged without manual edits.
+The shared test database validator and main's rate-limit fixture settings remain present in both database suites.
+
+Node 24.21.0 and npm 12.2.0 passed clean installation, `npm run verify` with 81 offline tests, and all 22 maintenance evaluations.
+Sequential `npm run test:acceptance` passed all 38 integration tests and all 38 E2E tests against an isolated local Postgres 18.6 cluster.
+The database was `voiceops_pr15_test` on port 55445, and the cluster stopped after verification.
+The E2E run is `01a12370-2ecc-7490-a014-1c615ae1186d`, with reports under `artifacts/e2e/` in `/tmp/voiceops-pr15-conflicts`.
+The logs are `/tmp/voiceops-pr15-install.log`, `/tmp/voiceops-pr15-verify.log`, `/tmp/voiceops-pr15-eval.log`, and `/tmp/voiceops-pr15-acceptance.log`.
+Conflict-marker and whitespace checks passed.
+
+The resolution itself is low risk because it preserves documentation and introduces no new behavior.
+The underlying PR remains medium risk as recorded above.
+Hosted CI for the updated branch, maintainer review, release, and hosted voice remain unverified.
+The requested scope is conflict resolution; PR 15 remains open.

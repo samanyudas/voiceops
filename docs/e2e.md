@@ -11,6 +11,8 @@ Create an isolated synthetic Postgres database before running either database su
 Both suites reset their database and accept only `postgres:` or `postgresql:` URLs with a `localhost` or `127.0.0.1` host.
 The database name must contain only letters, digits, and underscores, and end in `_test`.
 The URL must have no query parameters or fragment because the Postgres driver can override the connection target through query parameters.
+The E2E wrapper validates the URL before it starts the runner, including when the runner is unavailable.
+Malformed URLs return a fixed configuration error without printing the supplied credentials.
 These restrictions apply to test commands only.
 Do not run both suites concurrently against the same database.
 
