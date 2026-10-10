@@ -19,7 +19,7 @@ export const query = (text: string, params: readonly unknown[] = []) => {
 const execute = promisify(execFile);
 export const operatorKey = 'synthetic-e2e-operator-key';
 export const technicianKey = 'synthetic-e2e-technician-key';
-export const env = { ...process.env, DATABASE_URL: databaseUrl, TOOL_API_KEY: operatorKey, TECHNICIAN_API_KEY: technicianKey, HOST: '127.0.0.1', E2E_TELEMETRY_DISABLED: '1' };
+export const env = { ...process.env, RATE_LIMIT_WINDOW_SECONDS: '60', RATE_LIMIT_ALL_PER_WINDOW: '100000', RATE_LIMIT_WRITES_PER_WINDOW: '100000', DATABASE_URL: databaseUrl, TOOL_API_KEY: operatorKey, TECHNICIAN_API_KEY: technicianKey, HOST: '127.0.0.1', E2E_TELEMETRY_DISABLED: '1' };
 let server: ReturnType<typeof spawn> | undefined;
 let base = '';
 let logs = '';
