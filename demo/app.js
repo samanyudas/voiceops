@@ -239,7 +239,7 @@ async function pace() {
   if (mode !== 'play') return;
   await new Promise(resolve => {
     advance = resolve;
-    if (!paused) setTimeout(resolve, 2800);
+    if (!paused) setTimeout(() => { if (!paused) resolve(); }, 2800);
   });
   advance = null;
 }
