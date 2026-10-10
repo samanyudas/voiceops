@@ -333,3 +333,25 @@ Live microphone audio was not exercised because no ElevenLabs credentials exist 
 The signed URL endpoint returned HTTP 401 for a fake key, which shows only that the route exists.
 The ElevenLabs WebSocket message handling follows the documented agent protocol but is unverified.
 No integration or E2E test covers the demo server yet.
+
+### Independent demo verification
+
+On 2026-10-10, a second session checked commit `5a67619` on Node 24.21.0 and npm 12.2.0 against a fresh database on the local Postgres 18.1 cluster.
+Play on freshly seeded data produced a HIGH P-101 job that was queued, assigned to Tech-03 after its seeded job resolved, and closed.
+`GET /state` showed the same ten events, from NEW through QUEUED, ASSIGNED, and CLOSED.
+A second run was assigned at once, as the guide states.
+With the backend stopped, the page failed the Understand step with HTTP 502 and showed "Backend offline".
+The page rendered without overflow at 390 pixels wide.
+`selftest`, `check:repo`, `eval`, `package:source`, and `check:package` passed, and the package contains `demo/` and `tools/demo.ts`.
+
+`npm run verify` failed twice with 80 of 81 tests passing.
+The failure was `tests/server-config.test.mjs`, once with two sentinel connections and once with a 3-second spawn timeout.
+The same test passed three times in isolation, so it is a load-dependent flake in a backend test this branch does not change.
+
+Two defects were found and then fixed in the same session.
+
+- The demo server accepted cross-site requests. A `text/plain` POST with `Origin: https://evil.example` resolved a job through `/demo/api/technician/actions` using the server-held technician key, and the trace labelled it "demo page". The demo server now rejects a request whose `Host` is not its own address, and a write whose `Origin` is not its own page. `tests/demo-server.test.mjs` failed with `cross-site write rejected`, actual 200 and expected 403, before the fix and passes after it. Against the real stack, the same POST returned 403 and Tech-01's job stayed IN_PROGRESS. The page's own calls and the tool relay still returned 200.
+- Pause did not cancel a step that was already waiting. Pause pressed 0.3 seconds into Play let the Understand call run at 2.8 seconds. After the fix, only Call had completed 4.5 seconds after Pause, and Resume continued to Understand.
+
+The demo server now reports its bound port, so `DEMO_PORT=0` works for the test.
+The flaky `server-config` test remains open for a separate branch.
