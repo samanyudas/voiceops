@@ -24,6 +24,7 @@
     "start": "node --env-file-if-exists=.env dist/tools/server.js",
     "seed": "node --env-file-if-exists=.env dist/tools/seed.js",
     "technician": "node --env-file-if-exists=.env dist/tools/technician.js",
+    "demo": "node --env-file-if-exists=.env dist/tools/demo.js",
     "test:integration": "npm run build && node --test --test-timeout=30000 tests/integration/*.test.mjs",
     "test:e2e": "npm run build && node tools/run-e2e.mjs",
     "test:acceptance": "npm run test:integration && npm run test:e2e"

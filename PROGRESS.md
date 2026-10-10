@@ -312,3 +312,24 @@ The resolution itself is low risk because it preserves documentation and introdu
 The underlying PR remains medium risk as recorded above.
 Hosted CI for the updated branch, maintainer review, release, and hosted voice remain unverified.
 The requested scope is conflict resolution; PR 15 remains open.
+
+## Demo page
+
+On 2026-10-10, branch `feat/demo-ui` added a browser demo page in `demo/` and a local demo server in `tools/demo.ts`.
+The guide is [docs/demo-ui.md](docs/demo-ui.md).
+The demo server holds both backend credentials, records forwarded calls, and streams them to the page.
+An optional tool relay forwards only operator routes, so the hosted agent's calls appear on the page.
+The backend source did not change.
+
+Node 24.21.0 and npm 12.2.0 passed `npm run verify` with 81 offline tests.
+The page was exercised in a browser against the real backend and a local Postgres 18.1 cluster on port 5433.
+On freshly seeded data, Play created a HIGH P-101 job with a duplicate question, queued it, released Tech-03, assigned Tech-03, and closed the job.
+A repeated fresh run passed after the final edits.
+Curl checks confirmed that the relay forwards operator calls, rejects technician routes with 404, and adds no credential.
+The trace stream contained no credential header.
+Agent-style relay calls lit the Live mode steps through to a closed job.
+
+Live microphone audio was not exercised because no ElevenLabs credentials exist on this machine.
+The signed URL endpoint returned HTTP 401 for a fake key, which shows only that the route exists.
+The ElevenLabs WebSocket message handling follows the documented agent protocol but is unverified.
+No integration or E2E test covers the demo server yet.
