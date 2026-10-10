@@ -19,6 +19,8 @@ Open `http://127.0.0.1:4173`.
 The demo server reads `TOOL_API_KEY`, `TECHNICIAN_API_KEY`, and `VOICEOPS_URL` from `.env`.
 It holds both credentials, so the browser never receives them.
 It listens only on `127.0.0.1`.
+It answers only requests addressed to `127.0.0.1` or `localhost` on its port.
+It forwards a write only when the request's `Origin` is its own page, so other websites cannot use its credentials.
 Set `DEMO_PORT` to change the port.
 
 ## Play scenario

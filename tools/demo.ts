@@ -1,4 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 
@@ -109,7 +110,21 @@ async function signedUrl(response: ServerResponse): Promise<void> {
 const assets: Readonly<Record<string, string>> = { '/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css' };
 const types: Readonly<Record<string, string>> = { html: 'text/html; charset=utf-8', js: 'text/javascript; charset=utf-8', css: 'text/css; charset=utf-8' };
 
+function boundPort(): number {
+  const address: AddressInfo | string | null = ui.address();
+  return typeof address === 'object' && address !== null ? address.port : port;
+}
+
+// The server holds both credentials, so it serves only its own page. Checking
+// Host blocks DNS rebinding, and checking Origin blocks cross-site writes.
+function ownOrigin(request: IncomingMessage): boolean {
+  const hosts = [`127.0.0.1:${boundPort()}`, `localhost:${boundPort()}`];
+  if (!hosts.includes(request.headers.host ?? '')) return false;
+  return request.method === 'GET' || hosts.some(host => request.headers.origin === `http://${host}`);
+}
+
 const ui = createServer((request, response) => {
+  if (!ownOrigin(request)) return send(response, 403, { error: 'The demo server accepts only requests from its own page.' });
   const path = new URL(request.url ?? '/', 'http://localhost').pathname;
   const asset = assets[path];
   if (request.method === 'GET' && asset) {
@@ -129,7 +144,7 @@ const ui = createServer((request, response) => {
   if (path.startsWith('/demo/api/')) return void forward(request, response, path.slice('/demo/api'.length), 'ui').catch(() => send(response, 400, { error: 'Invalid request.' }));
   send(response, 404, { error: 'Not found.' });
 });
-ui.listen(port, '127.0.0.1', () => process.stdout.write(`Demo UI on http://127.0.0.1:${port} forwarding to ${backend}\n`));
+ui.listen(port, '127.0.0.1', () => process.stdout.write(`Demo UI on http://127.0.0.1:${boundPort()} forwarding to ${backend}\n`));
 
 if (relayPort !== null) {
   const relay = createServer((request, response) => {
