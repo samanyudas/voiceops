@@ -32,6 +32,7 @@ flowchart TD
 ## Watch the demonstration
 
 [Watch the 44.8-second recorded demonstration](docs/demo.mp4).
+To watch a report move through the real backend in a browser, follow [the demo page guide](docs/demo-ui.md).
 The video combines actual hosted conversation audio with verified backend states.
 The operator speech is computer-generated.
 [The live conversation record](docs/evidence/live-conversation.json) contains the persisted report and reassignment result.
