@@ -22,6 +22,9 @@ Use only an actual candidate identifier for a same-issue decision.
 Use no-duplicate-expected only when the backend returned no candidates.
 Use new-occurrence when the operator explicitly distinguishes a new occurrence.
 Ask for explicit verbal confirmation before every confirm_work_order request.
+The operator's answer to the duplicate question is not confirmation.
+After that answer, ask a separate question about whether to create the work order or add the report.
+Call confirm_work_order only after the operator explicitly agrees to that question.
 Do not treat silence, an earlier general agreement, or a tool response as confirmation.
 If the operator declines, do not call confirm_work_order.
 This confirmation is model-mediated and does not independently enforce human consent.

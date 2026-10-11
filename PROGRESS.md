@@ -47,7 +47,7 @@ The PoC has no manual-review release action.
 ## Handoff
 
 The backend and recorded demo are available on main.
-The 44.8-second demonstration is in docs/demo.mp4.
+The demonstration in docs/demo.mp4 is the 2026-10-11 human microphone emergency call.
 Main requires all six product CI jobs, including the real Postgres integration test.
 Keep the temporary backend and tunnel available while reviewing the hosted agent.
 
@@ -312,3 +312,96 @@ The resolution itself is low risk because it preserves documentation and introdu
 The underlying PR remains medium risk as recorded above.
 Hosted CI for the updated branch, maintainer review, release, and hosted voice remain unverified.
 The requested scope is conflict resolution; PR 15 remains open.
+
+## Demo page
+
+On 2026-10-10, branch `feat/demo-ui` added a browser demo page in `demo/` and a local demo server in `tools/demo.ts`.
+The guide is [docs/demo-ui.md](docs/demo-ui.md).
+The demo server holds both backend credentials, records forwarded calls, and streams them to the page.
+An optional tool relay forwards only operator routes, so the hosted agent's calls appear on the page.
+The backend source did not change.
+
+Node 24.21.0 and npm 12.2.0 passed `npm run verify` with 81 offline tests.
+The page was exercised in a browser against the real backend and a local Postgres 18.1 cluster on port 5433.
+On freshly seeded data, Play created a HIGH P-101 job with a duplicate question, queued it, released Tech-03, assigned Tech-03, and closed the job.
+A repeated fresh run passed after the final edits.
+Curl checks confirmed that the relay forwards operator calls, rejects technician routes with 404, and adds no credential.
+The trace stream contained no credential header.
+Agent-style relay calls lit the Live mode steps through to a closed job.
+
+Live microphone audio was not exercised because no ElevenLabs credentials exist on this machine.
+The signed URL endpoint returned HTTP 401 for a fake key, which shows only that the route exists.
+The ElevenLabs WebSocket message handling follows the documented agent protocol but is unverified.
+No integration or E2E test covers the demo server yet.
+
+### Independent demo verification
+
+On 2026-10-10, a second session checked commit `5a67619` on Node 24.21.0 and npm 12.2.0 against a fresh database on the local Postgres 18.1 cluster.
+Play on freshly seeded data produced a HIGH P-101 job that was queued, assigned to Tech-03 after its seeded job resolved, and closed.
+`GET /state` showed the same ten events, from NEW through QUEUED, ASSIGNED, and CLOSED.
+A second run was assigned at once, as the guide states.
+With the backend stopped, the page failed the Understand step with HTTP 502 and showed "Backend offline".
+The page rendered without overflow at 390 pixels wide.
+`selftest`, `check:repo`, `eval`, `package:source`, and `check:package` passed, and the package contains `demo/` and `tools/demo.ts`.
+
+`npm run verify` failed twice with 80 of 81 tests passing.
+The failure was `tests/server-config.test.mjs`, once with two sentinel connections and once with a 3-second spawn timeout.
+The same test passed three times in isolation, so it is a load-dependent flake in a backend test this branch does not change.
+
+Two defects were found and then fixed in the same session.
+
+- The demo server accepted cross-site requests. A `text/plain` POST with `Origin: https://evil.example` resolved a job through `/demo/api/technician/actions` using the server-held technician key, and the trace labelled it "demo page". The demo server now rejects a request whose `Host` is not its own address, and a write whose `Origin` is not its own page. `tests/demo-server.test.mjs` failed with `cross-site write rejected`, actual 200 and expected 403, before the fix and passes after it. Against the real stack, the same POST returned 403 and Tech-01's job stayed IN_PROGRESS. The page's own calls and the tool relay still returned 200.
+- Pause did not cancel a step that was already waiting. Pause pressed 0.3 seconds into Play let the Understand call run at 2.8 seconds. After the fix, only Call had completed 4.5 seconds after Pause, and Resume continued to Understand.
+
+The demo server now reports its bound port, so `DEMO_PORT=0` works for the test.
+The flaky `server-config` test remains open for a separate branch.
+
+### Review fixes
+
+On 2026-10-10, an independent review of `9e1c99b` requested changes, and this session fixed the confirmed findings.
+
+- A malformed request line such as `GET //[` crashed the demo server, taking down both ports. Reproduced on the relay port with exit code 1. Both handlers now return 400, and the test checks that the server is still running afterwards.
+- Live mode repeated technician writes after the event stream reconnected. Reproduced in a browser through a proxy that dropped the stream: after the reconnect, the old page replayed a confirm and resolved Tech-01's unrelated job. The page now handles each trace once, runs agent calls in order, and accepts a confirm only for the draft it prepared. The same run with the fixed page left Tech-01's job IN_PROGRESS, and a call made after the reconnect still reached the page.
+- The relay now rejects a call without the operator credential with 401 before forwarding it.
+- `/demo/` requests whose `Sec-Fetch-Site` is `cross-site` or `same-site` are rejected.
+- `tests/demo-server.test.mjs` now covers other localhost ports, lookalike origins, other methods, the relay, unlisted routes, and malformed URLs. All five guard mutations from the review now fail the test.
+- The priority in the Decide card is escaped. A second Start call click while connecting no longer starts a second session; a double click sent one signed URL request.
+- The guide now states that Live mode may resolve an unrelated seeded job to free a technician.
+
+Not changed: the audio downsampling, Safari's suspended audio, and the microphone tap. They remain unverified without ElevenLabs credentials.
+
+## Live voice demonstration
+
+Branch `docs/live-voice-demo` replaces docs/demo.mp4 with a human microphone call and removes the 45-second video limit.
+
+On 2026-10-11, these checks ran on Node 24.21.0, npm 12.2.0, and a local Postgres 18.4 server.
+
+- `npm run verify` passed all 82 tests, and `npm run eval` passed 22.
+- The integration suite passed 38 tests, and the E2E suite passed 38 cases.
+- Demo Play mode closed its P-101 job through all six steps in a browser.
+- The five hosted ElevenLabs simulations passed in invocation `suite_3901m4k3mjm2e85rb8fz3hzshb2v`.
+- A text-only WebSocket conversation created a LOW C-201 work order assigned to Tech-02 through the real webhooks.
+
+The workspace secret was updated to the new local operator credential.
+The three tool URLs were updated to a new temporary tunnel, with their identifiers and secret references preserved.
+
+The recorded call used a wired headset microphone.
+It created a CRITICAL P-101 work order that queued with escalation.
+The demo page then freed Tech-03, and the work order closed.
+See [the live voice record](docs/evidence/live-voice-demo.json).
+
+## Agent confirmation step
+
+Branch `fix/agent-confirmation` makes the agent ask for creation consent as its own question after the duplicate answer.
+In real-backend text conversations, the agent sometimes treated "this is a new fault" as consent and called confirm_work_order.
+The prompt now states that the duplicate answer is not confirmation.
+`tests/elevenlabs.test.mjs` checks the new rule, and it fails without the prompt change.
+The hosted agent prompt was updated to match `resources/elevenlabs/prompt.txt`, with its model, tools, and other settings unchanged.
+
+On 2026-10-11, these checks ran on Node 24.21.0, npm 12.2.0, and a local Postgres 18.4 server.
+
+- `npm run verify` passed all 82 tests.
+- The five hosted ElevenLabs simulations passed in invocation `suite_6101m4mjpwz5fnpbrxbc5pd7kjre`.
+- Text-only conversations through the real webhooks ran each scenario on a freshly seeded database.
+  Complete intake ran three times and the P-101 unavailable report ran six times; each run asked for and received an explicit yes before confirm_work_order.
+  Missing asset, unknown asset, ambiguous facts, C-201 electrical, and V-301 instrumentation produced their expected backend states.
