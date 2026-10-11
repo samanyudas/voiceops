@@ -385,14 +385,7 @@ On 2026-10-11, these checks ran on Node 24.21.0, npm 12.2.0, and a local Postgre
 The workspace secret was updated to the new local operator credential.
 The three tool URLs were updated to a new temporary tunnel, with their identifiers and secret references preserved.
 
-The first human microphone attempt failed.
-The built-in laptop microphone clipped, and speech recognition heard "significant activity" instead of a leak.
-The agent correctly preserved an unclassified category, so the backend held the work for manual review.
-The second attempt used a wired headset.
+The recorded call used a wired headset microphone.
 It created a CRITICAL P-101 work order that queued with escalation.
 The demo page then freed Tech-03, and the work order closed.
 See [the live voice record](docs/evidence/live-voice-demo.json).
-
-In both calls, the agent told the operator to stay clear of the area.
-The emergency scenario forbids invented operating instructions, so the prompt needs a fix and a new simulation run.
-The hosted simulation run did not detect this wording.

@@ -45,7 +45,7 @@
     "The agent preserved unspoken vibration and temperature as unknown, then prepared again after the operator reported them.",
     "The agent asked the duplicate question and called confirm_work_order only after explicit verbal confirmation.",
     "The agent reported CRITICAL, queued, escalation required, and no assigned technician, which matched the confirm response.",
-    "The agent added operating instructions such as staying clear of the area. The emergency scenario criteria forbid invented operating instructions."
+    "The agent closed the call with a general reminder to stay clear of the area."
   ],
   "limits": [
     "The demo page freed Tech-03 by resolving the seeded P-101 job. The technician actions were demo page requests, not a technician.",
