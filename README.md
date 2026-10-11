@@ -31,11 +31,12 @@ flowchart TD
 
 ## Watch the demonstration
 
-[Watch the 44.8-second recorded demonstration](docs/demo.mp4).
+[Watch the recorded demonstration](docs/demo.mp4).
 To watch a report move through the real backend in a browser, follow [the demo page guide](docs/demo-ui.md).
-The video combines actual hosted conversation audio with verified backend states.
-The operator speech is computer-generated.
-[The live conversation record](docs/evidence/live-conversation.json) contains the persisted report and reassignment result.
+The video shows a human operator reporting an emergency on the demo page's Live voice mode.
+The hosted agent creates a CRITICAL work order, which queues with escalation and then closes after a technician is freed.
+[The live voice record](docs/evidence/live-voice-demo.json) contains the tool calls and persisted result.
+[The earlier live conversation record](docs/evidence/live-conversation.json) used computer-generated operator speech.
 [The live simulation record](docs/evidence/voice-evals.json) contains the five-scenario result.
 
 ## Start here

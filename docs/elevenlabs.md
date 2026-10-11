@@ -150,7 +150,6 @@ Open the created hosted agent in ElevenLabs.
 Use actual synthetic backend data through the verified HTTPS tunnel.
 Show the returned work order and persisted assignment in the terminal.
 Use the separate technician CLI to demonstrate capacity release and queued assignment.
-Keep the recording at or below 45 seconds.
 
 The prompt requests verbal confirmation before a mutation.
 That confirmation remains model-mediated.
