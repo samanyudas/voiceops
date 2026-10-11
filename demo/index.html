@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VoiceOps demo</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main class="app">
+  <header class="top">
+    <div>
+      <div class="m">VoiceOps · demo</div>
+      <h1>A spoken fault report becomes a dispatched repair.</h1>
+      <p class="sub">Watch one report move through the real backend, from the first sentence to a closed job.</p>
+    </div>
+    <div class="status">
+      <span class="pill" id="backend-status"><span class="dot"></span>Backend</span>
+      <span class="pill" id="voice-status"><span class="dot"></span>Voice</span>
+    </div>
+  </header>
+
+  <nav class="modes" aria-label="Mode">
+    <button class="tab on" data-mode="play">Play scenario</button>
+    <button class="tab" data-mode="live">Live voice</button>
+  </nav>
+
+  <ol class="flow" id="flow"></ol>
+
+  <section class="card" id="card" aria-live="polite"></section>
+
+  <section class="live" id="live" hidden>
+    <div class="live-head">
+      <button class="btn" id="call">Start call</button>
+      <span class="m" id="call-state">Microphone off</span>
+    </div>
+    <div class="examples">
+      <div class="m">Try saying</div>
+      <p><b>“Pump P-101 has a mechanical leak. It's unavailable. The leak is minor. No fire, no hazard, vibration and temperature are normal.”</b> HIGH priority, duplicate check, then a wait for a mechanic.</p>
+      <p><b>“Compressor C-201 has an electrical fault. It's still running. Everything else is normal.”</b> LOW priority, assigned to the electrician straight away.</p>
+      <p><b>“Separator V-301 has an instrumentation fault. I don't know the temperature.”</b> Held for manual review.</p>
+    </div>
+  </section>
+
+  <div class="bar">
+    <button class="btn" id="play">Play</button>
+    <button class="btn ghost" id="next">Next step</button>
+    <span class="sp"></span>
+    <span class="m" id="source"></span>
+    <button class="link" id="details-toggle">Show technical details</button>
+  </div>
+
+  <section class="details" id="details" hidden>
+    <div class="m">Backend calls recorded by the demo server</div>
+    <ol id="traces"></ol>
+  </section>
+</main>
+<script type="module" src="/app.js"></script>
+</body>
+</html>

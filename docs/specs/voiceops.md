@@ -261,7 +261,6 @@ Pin the versions used and record commands that reproduce actual test results.
 
 Lead the README with the demo and the voice-to-work-order claim.
 Explain deterministic operational control, confirmation limitations, queue behavior, and test evidence.
-Keep the final video at or below 45 seconds.
 Do not claim conversational tests passed until an actual run provides those results.
 
 Apply the ready-for-agent label when the confirmed spec is published.
