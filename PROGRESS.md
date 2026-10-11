@@ -47,7 +47,7 @@ The PoC has no manual-review release action.
 ## Handoff
 
 The backend and recorded demo are available on main.
-The 44.8-second demonstration is in docs/demo.mp4.
+The demonstration in docs/demo.mp4 is the 2026-10-11 human microphone emergency call.
 Main requires all six product CI jobs, including the real Postgres integration test.
 Keep the temporary backend and tunnel available while reviewing the hosted agent.
 
@@ -369,3 +369,30 @@ On 2026-10-10, an independent review of `9e1c99b` requested changes, and this se
 - The guide now states that Live mode may resolve an unrelated seeded job to free a technician.
 
 Not changed: the audio downsampling, Safari's suspended audio, and the microphone tap. They remain unverified without ElevenLabs credentials.
+
+## Live voice demonstration
+
+Branch `docs/live-voice-demo` replaces docs/demo.mp4 with a human microphone call and removes the 45-second video limit.
+
+On 2026-10-11, these checks ran on Node 24.21.0, npm 12.2.0, and a local Postgres 18.4 server.
+
+- `npm run verify` passed all 82 tests, and `npm run eval` passed 22.
+- The integration suite passed 38 tests, and the E2E suite passed 38 cases.
+- Demo Play mode closed its P-101 job through all six steps in a browser.
+- The five hosted ElevenLabs simulations passed in invocation `suite_3901m4k3mjm2e85rb8fz3hzshb2v`.
+- A text-only WebSocket conversation created a LOW C-201 work order assigned to Tech-02 through the real webhooks.
+
+The workspace secret was updated to the new local operator credential.
+The three tool URLs were updated to a new temporary tunnel, with their identifiers and secret references preserved.
+
+The first human microphone attempt failed.
+The built-in laptop microphone clipped, and speech recognition heard "significant activity" instead of a leak.
+The agent correctly preserved an unclassified category, so the backend held the work for manual review.
+The second attempt used a wired headset.
+It created a CRITICAL P-101 work order that queued with escalation.
+The demo page then freed Tech-03, and the work order closed.
+See [the live voice record](docs/evidence/live-voice-demo.json).
+
+In both calls, the agent told the operator to stay clear of the area.
+The emergency scenario forbids invented operating instructions, so the prompt needs a fix and a new simulation run.
+The hosted simulation run did not detect this wording.
