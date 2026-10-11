@@ -1,0 +1,54 @@
+{
+  "recordedAt": "2026-10-11T03:32:55Z",
+  "conversationId": "conv_2401m4mgakfwen5s9xh88x0yn3xa",
+  "scenario": "emergency",
+  "input": "Human operator speaking through a wired headset microphone in the demo page Live voice mode. Lines were read from a prepared script.",
+  "callDurationSeconds": 254,
+  "backend": "Freshly seeded local Postgres 18.4 through the demo tool relay and a temporary HTTPS tunnel.",
+  "toolCalls": [
+    { "tool": "get_maintenance_context", "assetId": "pump 101", "result": "400 InvalidAssetId" },
+    { "tool": "get_maintenance_context", "assetId": "P-101", "result": "asset with open work demo-busy-mechanical" },
+    { "tool": "prepare_work_order", "facts": "vibration and temperature unknown", "result": "manual-review" },
+    { "tool": "prepare_work_order", "facts": "all six facts reported", "result": "duplicate-decision-required" },
+    { "tool": "confirm_work_order", "decision": "new-occurrence", "result": "created, CRITICAL, queued, escalationRequired" }
+  ],
+  "persisted": {
+    "workOrderId": "80f7f93e-9b88-42d4-a3b1-07b5d89ca4a6",
+    "assetId": "P-101",
+    "category": "mechanical-leak",
+    "facts": {
+      "equipment": "operating",
+      "leak": "significant",
+      "fireOrSmoke": "no",
+      "personnelHazard": "yes",
+      "vibration": "normal",
+      "temperature": "normal"
+    },
+    "priority": "CRITICAL",
+    "events": [
+      "NEW",
+      "VALIDATED",
+      "PRIORITIZED",
+      "QUEUED",
+      "ESCALATION_REQUIRED",
+      "ASSIGNED",
+      "ACKNOWLEDGED",
+      "IN_PROGRESS",
+      "RESOLVED",
+      "CAPACITY_RELEASED",
+      "CLOSED"
+    ],
+    "technicianId": "Tech-03"
+  },
+  "observations": [
+    "The agent asked for a corrected identifier after the backend rejected pump 101 and did not invent an asset.",
+    "The agent preserved unspoken vibration and temperature as unknown, then prepared again after the operator reported them.",
+    "The agent asked the duplicate question and called confirm_work_order only after explicit verbal confirmation.",
+    "The agent reported CRITICAL, queued, escalation required, and no assigned technician, which matched the confirm response.",
+    "The agent closed the call with a general reminder to stay clear of the area."
+  ],
+  "limits": [
+    "The demo page freed Tech-03 by resolving the seeded P-101 job. The technician actions were demo page requests, not a technician.",
+    "One recorded conversation does not prove repeatable agent wording."
+  ]
+}
