@@ -405,3 +405,22 @@ On 2026-10-11, these checks ran on Node 24.21.0, npm 12.2.0, and a local Postgre
 - Text-only conversations through the real webhooks ran each scenario on a freshly seeded database.
   Complete intake ran three times and the P-101 unavailable report ran six times; each run asked for and received an explicit yes before confirm_work_order.
   Missing asset, unknown asset, ambiguous facts, C-201 electrical, and V-301 instrumentation produced their expected backend states.
+
+## PR 22 dependency repair
+
+On 2026-10-11, branch `fix/pr22-effect-peers` repaired PR 22's incompatible peer dependency.
+`npm ci --ignore-scripts` failed before the repair with ERESOLVE because platform-node 4.0.1 requires Effect at least 4.0.1.
+The root Effect pin now matches platform-node at 4.0.1, and npm regenerated the lockfile.
+No peer-validation bypass or application code change was added.
+The report is [issue 27](https://github.com/samanyudas/voiceops/issues/27).
+
+On Node 24.21.0 and npm 12.2.0, clean locked installation passed.
+`npm run verify` passed all 82 tests, and all 22 evaluations passed.
+The first concurrent verification run timed out in the inherited server-config subprocess test with 81 of 82 passing.
+The subsequent full run passed without a test change.
+Sequential acceptance passed all 38 integration tests and all 38 E2E cases on an isolated local Postgres cluster at port 55446.
+The E2E run is `01a12975-1895-7329-b4bb-c5808765d9e6`.
+Committed source-package verification, independent review, and fresh hosted CI are pending.
+Logs are `/tmp/voiceops-pr22-before.log`, `/tmp/voiceops-pr22-ci.log`, `/tmp/voiceops-pr22-verify-final.log`, `/tmp/voiceops-pr22-eval.log`, and `/tmp/voiceops-pr22-acceptance.log`.
+Fix Root Causes required repairing the incompatible pin rather than bypassing npm's peer checks.
+No hosted voice, release, or merge was performed by this repair.
