@@ -47,7 +47,7 @@ The PoC has no manual-review release action.
 ## Handoff
 
 The backend and recorded demo are available on main.
-The 44.8-second demonstration is in docs/demo.mp4.
+The demonstration in docs/demo.mp4 is the 2026-10-11 human microphone emergency call.
 Main requires all six product CI jobs, including the real Postgres integration test.
 Keep the temporary backend and tunnel available while reviewing the hosted agent.
 
@@ -369,3 +369,39 @@ On 2026-10-10, an independent review of `9e1c99b` requested changes, and this se
 - The guide now states that Live mode may resolve an unrelated seeded job to free a technician.
 
 Not changed: the audio downsampling, Safari's suspended audio, and the microphone tap. They remain unverified without ElevenLabs credentials.
+
+## Live voice demonstration
+
+Branch `docs/live-voice-demo` replaces docs/demo.mp4 with a human microphone call and removes the 45-second video limit.
+
+On 2026-10-11, these checks ran on Node 24.21.0, npm 12.2.0, and a local Postgres 18.4 server.
+
+- `npm run verify` passed all 82 tests, and `npm run eval` passed 22.
+- The integration suite passed 38 tests, and the E2E suite passed 38 cases.
+- Demo Play mode closed its P-101 job through all six steps in a browser.
+- The five hosted ElevenLabs simulations passed in invocation `suite_3901m4k3mjm2e85rb8fz3hzshb2v`.
+- A text-only WebSocket conversation created a LOW C-201 work order assigned to Tech-02 through the real webhooks.
+
+The workspace secret was updated to the new local operator credential.
+The three tool URLs were updated to a new temporary tunnel, with their identifiers and secret references preserved.
+
+The recorded call used a wired headset microphone.
+It created a CRITICAL P-101 work order that queued with escalation.
+The demo page then freed Tech-03, and the work order closed.
+See [the live voice record](docs/evidence/live-voice-demo.json).
+
+## Agent confirmation step
+
+Branch `fix/agent-confirmation` makes the agent ask for creation consent as its own question after the duplicate answer.
+In real-backend text conversations, the agent sometimes treated "this is a new fault" as consent and called confirm_work_order.
+The prompt now states that the duplicate answer is not confirmation.
+`tests/elevenlabs.test.mjs` checks the new rule, and it fails without the prompt change.
+The hosted agent prompt was updated to match `resources/elevenlabs/prompt.txt`, with its model, tools, and other settings unchanged.
+
+On 2026-10-11, these checks ran on Node 24.21.0, npm 12.2.0, and a local Postgres 18.4 server.
+
+- `npm run verify` passed all 82 tests.
+- The five hosted ElevenLabs simulations passed in invocation `suite_6101m4mjpwz5fnpbrxbc5pd7kjre`.
+- Text-only conversations through the real webhooks ran each scenario on a freshly seeded database.
+  Complete intake ran three times and the P-101 unavailable report ran six times; each run asked for and received an explicit yes before confirm_work_order.
+  Missing asset, unknown asset, ambiguous facts, C-201 electrical, and V-301 instrumentation produced their expected backend states.

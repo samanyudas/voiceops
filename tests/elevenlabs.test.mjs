@@ -27,6 +27,7 @@ test('agent tools expose only context, preparation, and confirmation using store
   }
   assert.equal(bundle.agent.conversation_config.agent.prompt.enable_parallel_tool_calls, false);
   assert.match(bundle.agent.conversation_config.agent.prompt.prompt, /explicit verbal confirmation before every confirm_work_order/);
+  assert.match(bundle.agent.conversation_config.agent.prompt.prompt, /answer to the duplicate question is not confirmation/);
   assert.match(bundle.agent.conversation_config.agent.prompt.prompt, /model-mediated/);
   assert.doesNotMatch(JSON.stringify(bundle.tools), /x-voiceops-technician/);
 });
