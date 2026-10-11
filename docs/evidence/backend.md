@@ -63,8 +63,11 @@ The later live verification passed all five mocked ElevenLabs simulations.
 See [the simulation result](voice-evals.json).
 An actual audio conversation called all three webhook tools without tool errors.
 Its persisted report queued and then assigned Tech-02 after the technician CLI released capacity.
-See [the conversation record](live-conversation.json) and [44.8-second demonstration](../demo.mp4).
+See [the conversation record](live-conversation.json).
 The operator audio was computer-generated, with no human microphone.
+A later human microphone conversation reported an emergency through the demo page.
+Its CRITICAL work order queued with escalation, was assigned to Tech-03, and closed.
+See [the live voice record](live-voice-demo.json) and [the demonstration](../demo.mp4).
 No audio quality, production readiness, throughput, or multi-facility scalability result exists.
 The PoC uses one facility dispatcher lock.
 The backend cannot independently prove verbal consent or personal technician identity.
